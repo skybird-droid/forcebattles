@@ -24,3 +24,12 @@ ONLINE PLAY (room codes)
 - Both browsers run the same game with the same random seed and exchange every input, so the game code in game.js must be identical for both players (NETVER in net.js is checked when joining; bump it if you change rules).
 - The page must be served over https:// (or http://localhost) for WebRTC. Opening index.html from a file may also work, but https hosting is the reliable way.
 - To use your own matchmaking server instead of the public one, pass {host, port, path} as the second argument to new Peer(...) in net.js.
+
+
+UI update notes
+---------------
+- Character selection now includes a live name/trait search and faction/trait filter.
+- Selected characters have a gold outline, check mark, and a clear “selected — click to remove” label.
+- Clicking a selected character again removes it from the squad in local and online squad selection.
+- During battle, hover or keyboard-focus an Attack/Action/Epic ability icon to preview its valid target units on the board. Valid target units glow gold. Selecting the ability still shows the game's normal target highlights and confirms the action.
+- The range preview highlights units the ability can target, based on the existing game rules; it does not change ability range or combat behavior.

@@ -3,6 +3,7 @@ let prng=Math.random;
 function seedRng(s){let a=s>>>0;prng=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const $=s=>document.querySelector(s),shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(prng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a},rnd=n=>Math.floor(prng()*n),d6=()=>1+rnd(6),rl=n=>Array.from({length:Math.max(0,n)},d6),sum=a=>a.reduce((x,y)=>x+y,0);
 let G=null,P=[[],[]];
+let PICK_SEARCH='',PICK_FACTION='';
 const k=(u,x)=>u.d.k.includes(x)&&!(u.st&&u.st.sever&&!/^[ae]_/.test(x)),has=(u,t)=>u.d.t.includes(t);
 const live=t=>G.u.filter(u=>!u.dead&&(t==null||u.team==t));
 const al=u=>live(u.team).filter(x=>x!=u),en=u=>live(1-u.team);
@@ -116,34 +117,41 @@ const ak=r.k.filter(q=>/^a_/.test(q)),ek=r.k.filter(q=>/^e_/.test(q));let ai=0,e
 out.forEach(a=>{if(a.type=='Action')a.key=ak[ai++];else if(a.type=='Epic')a.key=ek[ei++]});r.abs=out}
 R.forEach(parseAbs);
 let TIPS=[];
-const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'),slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'),slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const iconSrc=n=>(typeof ICON_DATA!=='undefined'&&ICON_DATA[n])||'icons/'+encodeURIComponent(n)+'.png';
 const CATICON={multi:'doubleorextraattack',taunt:'taunt',stun:'stun',heal:'healing',atkup:'+1d6',atkdown:'-1d6',defup:'+1d6def',defdown:'-1d6def',move:'movement',o66:'order66'};
 const sideIc=r=>r.s=='D'?'darkside':'lightside';
 function abIcon(r,a){const c=ABICON[r.n+'|'+a.name];return c=='attack'?'attack-'+sideIc(r):(CATICON[c]||sideIc(r))}
 function abBtn(o){const ti=TIPS.push(`<b>${esc(o.name)}</b> <i>${o.type}</i><br>${esc(o.desc.charAt(0).toUpperCase()+o.desc.slice(1))}${o.note?`<br><span class="nt">${esc(o.note)}</span>`:''}`)-1;
 const gl=o.name.split(/[ \-']+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-return `<button type="button" class="ab ${o.cls}${o.on?' on':''}${o.used?' used':''}" data-ti="${ti}"${o.on?` onclick="${o.click}"`:''}><span class="gl">${gl}</span><img src="${iconSrc(o.icon)}" alt="" onerror="this.remove()"></button>`}
+return `<button type="button" class="ab ${o.cls}${o.on?' on':''}${o.used?' used':''}" data-ti="${ti}"${o.preview?` data-preview="${o.preview}"`:''}${o.on?` onclick="${o.click}"`:''}><span class="gl">${gl}</span><img src="${iconSrc(o.icon)}" alt="" onerror="this.remove()"></button>`}
 function homeBar(r){const rng=r.k.includes('bryar')?3:1;let h='<div class="abbar home" onclick="event.stopPropagation()">';
 h+=abBtn({name:'Attack',type:'Basic Attack',desc:`Roll ${r.a}d6 against an enemy ${rng>1?'up to 3 spaces away':'adjacent to you'}. The difference between the dice totals is damage.`,cls:'atk',icon:'attack-'+sideIc(r)});
 r.abs.forEach(a=>{const clk=a.key&&AB[a.key],epic=a.type=='Epic';h+=abBtn({name:a.name,type:a.type=='Passive'?'Passive':(epic?(clk?'Epic Action (once per game)':'Epic Action (automatic)'):(clk?'Action':'Automatic')),desc:a.desc,cls:a.type=='Passive'||!clk?'pas':(epic?'epic':'act'),icon:abIcon(r,a)})});return h+'</div>'}
 function abBar(u,live){const sil=en(u).some(v=>k(v,'manip')&&dist(v,u)<=1);let h='<div class="abbar">';
 const notLive=G.mode=='move'?'Finish moving first (click a green square, or your own square to stay).':'Select a unit of the side whose turn it is to use this.';
 const rng=k(u,'bryar')?3:1,can=en(u).some(x=>dist(u,x)<=rng)&&!u.n&&!u.st.nopatk&&!fxDis(u);
-h+=abBtn({name:'Attack',type:'Basic Attack',desc:`Roll ${u.d.a}d6 against an enemy ${rng>1?'up to 3 spaces away':'adjacent to you'}. The difference between the dice totals is damage.`,cls:'atk',icon:'attack-'+sideIc(u.d),on:live&&can,click:'doAtk()',note:live?(u.st.nopatk?'Cannot Attack this round.':u.n?'Already attacked.':can?'':'No enemy in range.'):notLive});
+h+=abBtn({name:'Attack',type:'Basic Attack',desc:`Roll ${u.d.a}d6 against an enemy ${rng>1?'up to 3 spaces away':'adjacent to you'}. The difference between the dice totals is damage.`,cls:'atk',icon:'attack-'+sideIc(u.d),preview:'attack',on:live&&can,click:'doAtk()',note:live?(u.st.nopatk?'Cannot Attack this round.':u.n?'Already attacked.':can?'':'No enemy in range.'):notLive});
 u.d.abs.forEach(a=>{const AB1=a.key&&AB[a.key];
 if(!AB1){const sev=a.type=='Passive'&&u.st.sever;h+=abBtn({name:a.name,type:a.type=='Passive'?'Passive':(a.type=='Epic'?'Epic Action (automatic)':'Automatic'),desc:a.desc,cls:'pas',icon:abIcon(u.d,a),note:sev?'Severed: inactive this round.':(a.type=='Passive'?'':'Triggers automatically.'),used:a.type=='Epic'&&u.ep});return}
 const epic=a.type=='Epic';let why='';
 if(!live)why=notLive;else if(epic&&u.ep)why='Already used this game.';else if(u.st.sever)why='Severed this round.';else if(u.st.nopatk&&AB1.atk)why='Cannot Attack this round.';else if(sil)why='Master Manipulator: you can only Attack.';else if(!AB1.tg(u).length)why='No valid target in range.';
-h+=abBtn({name:a.name,type:epic?'Epic Action (once per game)':'Action',desc:a.desc,cls:epic?'epic':'act',icon:abIcon(u.d,a),on:live&&!why,click:`doAb('${a.key}')`,note:why,used:epic&&u.ep})});
+h+=abBtn({name:a.name,type:epic?'Epic Action (once per game)':'Action',desc:a.desc,cls:epic?'epic':'act',icon:abIcon(u.d,a),preview:a.key,on:live&&!why,click:`doAb('${a.key}')`,note:why,used:epic&&u.ep})});
 return h+'</div>'}
 const fxDis=u=>k(u,'dis');
 const info=u=>`<div class="card"><b>${u.d.n}</b> (${u.d.t.join(', ')})<br>HP ${u.hp}/${u.d.h} · Attack ${u.d.a}d6 · Defense ${u.d.d}d6<br><i>${stTxt(u)}</i></div>`;
 const pk=(t,i)=>{const a=P[t],j=a.indexOf(i);if(j>=0)a.splice(j,1);else if(a.length<4)a.push(i);render()};
 const rand=()=>{[0,1].forEach(t=>{P[t]=shuf(R.map((r,i)=>i).filter(i=>R[i].s==(t?'D':'L'))).slice(0,4)});render()};
-function selectScreen(){let h=`<button onclick="LOBBY.mode='menu';render()">← Back</button> <p>Pick 4 characters per side (Player 1 = Light, Player 2 = Dark), pass-and-play on one device. Attack dice sum vs Defense dice sum; the difference is damage. A unit adjacent to an enemy can't move.</p><button onclick="rand()">🎲 Random teams</button> <button ${P[0].length==4&&P[1].length==4?'':'disabled'} onclick="start()">Start battle</button><div class="row" style="margin-top:8px">`;
-[0,1].forEach(t=>{h+=`<div class="col"><div class="bar ${t?'D':'L'}">${t?'Dark':'Light'} Side: ${P[t].length}/4 picked</div>`+R.map((r,i)=>r.s==(t?'D':'L')?`<div class="card" style="cursor:pointer;border:3px solid ${P[t].includes(i)?'#e8b923':'var(--ln)'}" onclick="pk(${t},${i})"><div style="display:flex;gap:8px;align-items:center"><div style="width:56px;height:56px;flex:none;border:3px solid var(--${r.s}); border-radius:6px;background:#888 ${r.img?`url('${r.img}')`:''} center/cover"></div><div><b>${r.n}</b><br>HP ${r.h} · ${r.a}d6 / ${r.d}d6<br><small>${r.t.join(' • ')}</small></div></div>${homeBar(r)}</div>`:'').join('')+'</div>'});
-$('#app').innerHTML=h+'</div>'}
+function setPickSearch(v){PICK_SEARCH=v;const el=document.activeElement,pos=el&&typeof el.selectionStart==='number'?el.selectionStart:v.length;if(typeof NET!=='undefined'&&NET&&LOBBY.phase==='pick')render();else selectScreen();const next=document.querySelector('.pick-search input');if(next){next.focus();try{next.setSelectionRange(pos,pos)}catch(_){}}}
+function setPickFaction(v){PICK_FACTION=v;if(typeof NET!=='undefined'&&NET&&LOBBY.phase==='pick')render();else selectScreen()}
+function selectScreen(){
+const factions=[...new Set(R.flatMap(r=>r.t))].sort((a,b)=>a.localeCompare(b));
+const matches=r=>(!PICK_SEARCH||(r.n+' '+r.t.join(' ')).toLowerCase().includes(PICK_SEARCH.toLowerCase()))&&(!PICK_FACTION||r.t.includes(PICK_FACTION));
+let h=`<div class="selection-header"><button onclick="LOBBY.mode='menu';render()">← Back to menu</button><div><div class="panel-eyebrow">BUILD YOUR SQUAD</div><h2>Choose your champions</h2><p>Pick four characters for each side. Click a selected character again to remove them.</p></div></div>
+<div class="pick-toolbar"><label class="pick-search"><span aria-hidden="true">⌕</span><input aria-label="Search characters" placeholder="Search characters or traits…" value="${esc(PICK_SEARCH)}" oninput="setPickSearch(this.value)"></label><label class="pick-filter"><span>FACTION / TRAIT</span><select aria-label="Filter by faction or trait" onchange="setPickFaction(this.value)"><option value="">All factions and traits</option>${factions.map(f=>`<option value="${esc(f)}" ${PICK_FACTION===f?'selected':''}>${esc(f)}</option>`).join('')}</select></label><button class="btn-secondary" onclick="PICK_SEARCH='';PICK_FACTION='';selectScreen()">Clear filters</button></div>
+<div class="selection-actions"><button onclick="rand()">🎲 Random teams</button><button class="btn-primary" ${P[0].length==4&&P[1].length==4?'':'disabled'} onclick="start()">Start battle · ${P[0].length+P[1].length}/8</button></div><div class="row pick-sides">`;
+[0,1].forEach(t=>{const filtered=R.map((r,i)=>({r,i})).filter(({r})=>r.s==(t?'D':'L')&&matches(r));h+=`<div class="col"><div class="bar ${t?'D':'L'}">${t?'Dark':'Light'} Side <span class="side-count">${P[t].length}/4 selected</span></div><div class="pickgrid">`+filtered.map(({r,i})=>{const chosen=P[t].includes(i);return `<div class="card pick-card ${chosen?'picked':''}" role="button" tabindex="0" aria-pressed="${chosen}" onclick="pk(${t},${i})" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();pk(${t},${i})}"><div class="pick-card-top"><div class="pick-portrait" style="border-color:var(--${r.s});background-image:${r.img?`url('${r.img}')`:'none'}"></div><div class="pick-details"><b>${esc(r.n)}</b><div class="pick-stats">♥ ${r.h} HP · ⚔ ${r.a}d6 · 🛡 ${r.d}d6</div><small>${r.t.map(esc).join(' · ')}</small></div><span class="pick-check" aria-hidden="true">${chosen?'✓':'+'}</span></div><div class="pick-tags">${r.t.slice(0,3).map(tag=>`<span>${esc(tag)}</span>`).join('')}</div>${homeBar(r)}${chosen?'<div class="selected-caption">SELECTED · CLICK TO REMOVE</div>':''}</div>`}).join('')+(filtered.length?'':'<div class="empty-picks">No characters match these filters.</div>')+'</div></div>'});h+='</div>';$('#app').innerHTML=h}
+
 function render(){let h='';TIPS=[];if(typeof document.getElementById=='function'){const t=document.getElementById('tip');if(t)t.style.display='none'}
 if(!G){prng=Math.random;if(LOBBY.mode=='local')selectScreen();else lobbyScreen();return}
 const s=G.sel;
@@ -151,7 +159,7 @@ h+=G.win!=null?`<div class="bar ${G.win?'D':'L'}">🏆 ${G.win?'Dark':'Light'} S
 h+=onlineBar();h+='<div class="row"><div class="col"><div class="board">';
 for(let y=0;y<8;y++)for(let x=0;x<8;x++){const u=occ(x,y);let c='c';
 if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
-h+=`<button class="${c}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} onclick="cell(${x},${y})">${u?`${u.d.n.replace(/ \(.*/,'')}<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
+h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} onclick="cell(${x},${y})">${u?`${u.d.n.replace(/ \(.*/,'')}<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
 h+='</div></div><div class="col">';
 if(s&&!G.win){h+=info(s)+abBar(s,G.mode=='act'&&mine())+'<div class="bt">';
 if(!mine()){}
@@ -166,6 +174,12 @@ else if(G.insp&&!G.insp.dead)h+=info(G.insp)+abBar(G.insp,false);
 h+=`<div class="log">${G.log.join('<br>')}</div></div></div>`;$('#app').innerHTML=h}
 if(typeof document.addEventListener=='function'){const tip=document.createElement('div');tip.id='tip';document.body.appendChild(tip);
 const place=(x,y)=>{const w=tip.offsetWidth,h=tip.offsetHeight;let l=x+14,t=y+14;if(l+w>innerWidth-8)l=Math.max(8,innerWidth-w-8);if(t+h>innerHeight-8)t=Math.max(8,y-h-10);tip.style.left=l+'px';tip.style.top=t+'px'};
+const clearRangePreview=()=>document.querySelectorAll('.board .range-target').forEach(n=>n.classList.remove('range-target'));
+const showRangePreview=btn=>{clearRangePreview();if(!G||!G.sel||G.mode!=='act'||!btn||!btn.dataset.preview)return;const u=G.sel,key=btn.dataset.preview;let targets=[];if(key==='attack'){const r=k(u,'bryar')?3:1;targets=en(u).filter(v=>dist(u,v)<=r)}else if(AB[key]&&typeof AB[key].tg==='function'){try{targets=AB[key].tg(u)||[]}catch(_){targets=[]}}targets.forEach(v=>{const c=document.querySelector(`.board [data-x="${v.x}"][data-y="${v.y}"]`);if(c)c.classList.add('range-target')})};
+document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('.ab[data-preview]');if(b)showRangePreview(b)});
+document.addEventListener('mouseout',e=>{const b=e.target.closest&&e.target.closest('.ab[data-preview]');if(b&&!(e.relatedTarget&&b.contains(e.relatedTarget)))clearRangePreview()});
+document.addEventListener('focusin',e=>{const b=e.target.closest&&e.target.closest('.ab[data-preview]');if(b)showRangePreview(b)});
+document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.ab[data-preview]'))clearRangePreview()});
 const at=e=>e.target.closest&&e.target.closest('[data-ti]');
 document.addEventListener('mouseover',e=>{const t=at(e);if(!t){tip.style.display='none';return}tip.innerHTML=TIPS[t.dataset.ti]||'';tip.style.display='block';place(e.clientX,e.clientY)});
 document.addEventListener('mousemove',e=>{if(tip.style.display=='block'&&at(e))place(e.clientX,e.clientY)});

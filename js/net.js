@@ -99,15 +99,32 @@ function onlineBar(){
   const st = LOBBY.msg ? `<span class="err">${esc(LOBBY.msg)}</span> <button onclick="netLeave()">Leave</button>` : (G.win != null ? (G.win == NET.me ? 'You win!' : 'You lose.') : (mine() ? '<b>Your turn</b>' : "Opponent's turn…"));
   return `<div class="card">Room <b>${NET.code}</b> · You are <b>${NET.me ? 'Dark' : 'Light'} Side</b> · ${st}</div>`;
 }
-const cardHtml = (r, i, on, fn) => `<div class="card" style="cursor:pointer;border:3px solid ${on ? '#e8b923' : 'var(--ln)'}" onclick="${fn}"><div style="display:flex;gap:8px;align-items:center"><div style="width:56px;height:56px;flex:none;border:3px solid var(--${r.s}); border-radius:6px;background:#888 ${r.img ? `url('${r.img}')` : ''} center/cover"></div><div><b>${r.n}</b><br>HP ${r.h} · ${r.a}d6 / ${r.d}d6<br><small>${r.t.join(' • ')}</small></div></div>${homeBar(r)}</div>`;
+const cardHtml = (r, i, on, fn) => `<div class="card pick-card ${on?'picked':''}" role="button" tabindex="0" aria-pressed="${on}" onclick="${fn}" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();${fn}}"><div class="pick-card-top"><div class="pick-portrait" style="border-color:var(--${r.s});background-image:${r.img?`url('${r.img}')`:'none'}"></div><div class="pick-details"><b>${esc(r.n)}</b><div class="pick-stats">♥ ${r.h} HP · ⚔ ${r.a}d6 · 🛡 ${r.d}d6</div><small>${r.t.map(esc).join(' · ')}</small></div><span class="pick-check" aria-hidden="true">${on?'✓':'+'}</span></div><div class="pick-tags">${r.t.slice(0,3).map(tag=>`<span>${esc(tag)}</span>`).join('')}</div>${homeBar(r)}${on?'<div class="selected-caption">SELECTED · CLICK TO REMOVE</div>':''}</div>`;
 function lobbyScreen(){
   let h = '';
   if (LOBBY.mode == 'menu') {
     if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)}</div>`;
-    h += `<p>A 4v4 duel: one player is Light Side and the other is Dark Side. In a room, the sides are assigned at random.</p>
-<div class="card"><b>Play online with a room code</b><br><br><button onclick="netHost()">Create room</button><br><br>
-<input id="joinCode" maxlength="5" placeholder="ROOM CODE" style="text-transform:uppercase;width:120px;padding:6px"> <button onclick="netJoin(document.getElementById('joinCode').value)">Join room</button></div>
-<div class="card"><b>Same device</b><br><br><button onclick="LOBBY.mode='local';render()">Play locally (pass-and-play)</button></div>`;
+    h += `<section class="hero">
+      <div class="hero-kicker"><span class="status-dot"></span> TACTICAL DUEL · 2 PLAYERS</div>
+      <h2>Choose your side.<br><span>Change the galaxy.</span></h2>
+      <p class="hero-copy">Build a squad of four legendary warriors and outthink your opponent in a turn-based Star Wars-inspired duel.</p>
+      <div class="hero-stats"><div><strong>4v4</strong><span>SQUAD BATTLES</span></div><div><strong>d6</strong><span>DICE COMBAT</span></div><div><strong>1v1</strong><span>ONLINE DUELS</span></div></div>
+    </section>
+    <section class="menu-grid">
+      <div class="menu-panel online-panel">
+        <div class="panel-icon">⌁</div><div class="panel-eyebrow">PLAY WITH A FRIEND</div>
+        <h3>Online Battle</h3><p>Create a private room or join a friend's match with a room code.</p>
+        <button class="btn-primary btn-wide" onclick="netHost()">＋ Create room</button>
+        <div class="join-row"><label for="joinCode">HAVE A ROOM CODE?</label><div class="join-controls"><input id="joinCode" maxlength="5" placeholder="ABCDE" aria-label="Room code" autocomplete="off" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"> <button class="btn-secondary" onclick="netJoin(document.getElementById('joinCode').value)">Join room <span aria-hidden="true">→</span></button></div></div>
+      </div>
+      <div class="menu-panel local-panel">
+        <div class="panel-icon">⚔</div><div class="panel-eyebrow">ONE DEVICE · TWO PLAYERS</div>
+        <h3>Local Skirmish</h3><p>Take turns on the same device. Perfect for learning the rules or playing side by side.</p>
+        <button class="btn-secondary btn-wide" onclick="LOBBY.mode='local';render()">Play locally <span aria-hidden="true">→</span></button>
+        <div class="mode-note"><span class="mode-dot"></span> No room code required</div>
+      </div>
+    </section>
+    <p class="menu-footnote">SELECT YOUR CHARACTERS · PLAN YOUR MOVES · MASTER THE FORCE</p>`;
   } else if (LOBBY.phase == 'wait') {
     const ok = NET && NET.peer.open;
     h += `<div class="card"><b>Room code: <span style="font-size:28px;letter-spacing:4px">${ok ? NET.code : '…'}</span></b><br>${ok ? 'Send this code to your opponent. Waiting for them to join…' : 'Creating room…'}<br><br><button onclick="netLeave()">Cancel</button></div>`;
@@ -117,8 +134,10 @@ function lobbyScreen(){
     const t = NET.me, side = t ? 'Dark' : 'Light';
     h += `<div class="bar ${t ? 'D' : 'L'}">Room ${NET.code} · You are ${side} Side (picked at random)</div>`;
     if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)} <button onclick="netLeave()">Leave</button></div>`;
-    h += `<p>Pick 4 ${side} Side characters. Your opponent is picking too, and teams are revealed when you are both ready.</p><button onclick="lobbyRandom()">🎲 Random team</button> <button ${LOBBY.picks.length == 4 && !LOBBY.ready ? '' : 'disabled'} onclick="lobbyReady()">${LOBBY.ready ? 'Ready ✓' : 'Ready'}</button> <button onclick="netLeave()">Leave room</button> <span>${LOBBY.picks.length}/4 picked · Opponent: ${LOBBY.oppReady ? 'ready' : 'picking…'}</span><div class="pickgrid">`;
-    R.forEach((r, i) => { if (r.s == (t ? 'D' : 'L')) h += cardHtml(r, i, LOBBY.picks.includes(i), `lpk(${i})`) });
+    h += `<div class="selection-header"><div><div class="panel-eyebrow">ONLINE SQUAD BUILDER</div><h2>Choose your champions</h2><p>Pick four ${side} Side characters. Click a selected character again to remove them. Your opponent is picking too.</p></div><div class="online-pick-actions"><button onclick="lobbyRandom()" ${LOBBY.ready?'disabled':''}>🎲 Random team</button><button class="btn-primary" ${LOBBY.picks.length == 4 && !LOBBY.ready ? '' : 'disabled'} onclick="lobbyReady()">${LOBBY.ready ? 'Ready ✓' : 'Ready · '+LOBBY.picks.length+'/4'}</button><button onclick="netLeave()">Leave room</button></div></div><div class="pick-toolbar"><label class="pick-search"><span aria-hidden="true">⌕</span><input aria-label="Search characters" placeholder="Search characters or traits…" value="${esc(PICK_SEARCH)}" oninput="setPickSearch(this.value)" ${LOBBY.ready?'disabled':''}></label><label class="pick-filter"><span>FACTION / TRAIT</span><select aria-label="Filter by faction or trait" onchange="setPickFaction(this.value)" ${LOBBY.ready?'disabled':''}><option value="">All factions and traits</option>${[...new Set(R.flatMap(r=>r.t))].sort((a,b)=>a.localeCompare(b)).map(f=>`<option value="${esc(f)}" ${PICK_FACTION===f?'selected':''}>${esc(f)}</option>`).join('')}</select></label><button class="btn-secondary" onclick="PICK_SEARCH='';PICK_FACTION='';render()" ${LOBBY.ready?'disabled':''}>Clear filters</button><span class="online-pick-status">${LOBBY.picks.length}/4 picked · Opponent: ${LOBBY.oppReady ? 'ready' : 'picking…'}</span></div><div class="pickgrid online-pick-grid">`;
+    let shown = 0;
+    R.forEach((r, i) => { if (r.s == (t ? 'D' : 'L') && (!PICK_SEARCH || (r.n+' '+r.t.join(' ')).toLowerCase().includes(PICK_SEARCH.toLowerCase())) && (!PICK_FACTION || r.t.includes(PICK_FACTION))) { h += cardHtml(r, i, LOBBY.picks.includes(i), `lpk(${i})`); shown++; } });
+    if (!shown) h += '<div class="empty-picks">No characters match these filters.</div>';
     h += '</div>';
   }
   $('#app').innerHTML = h;
