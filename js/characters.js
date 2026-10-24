@@ -51,7 +51,15 @@ const R=[
 {n:'Darth Traya',s:'D',t:['Sith','Sith Triumvirate','Force-Sensitive'],h:10,a:3,d:2,k:['web','e_saberstorm'],x:`Passive Betrayal's Web: an enemy that attacks her while a Sith Triumvirate ally is adjacent gets -1d6 Defense on the next attack against them. Epic Telekinetic Saber Storm: three separate 2d6 Attacks against up to three different targets within 2 spaces.`},
 {n:'Darth Nihilus',s:'D',t:['Sith','Sith Triumvirate','Force-Sensitive'],h:10,a:3,d:2,k:['hunger','a_drain'],x:`Passive Hunger of the Void: when an enemy within 2 spaces is defeated, he recovers 4 Health. Action Drain Life: adjacent enemy takes 2 unblockable damage and is Stunned; he recovers 2 Health.`},
 {n:'Darth Sion',s:'D',t:['Sith','Sith Triumvirate','Force-Sensitive'],h:13,a:3,d:2,k:['pain','a_hatred'],x:`Passive Lord of Pain: the first time he would drop to 0 Health, he is set to 4 Health instead and gains Taunt until the start of his next turn. Action Relentless Hatred: gains Taunt until his next turn and makes a 3d6 Attack on an adjacent enemy.`},
-{n:'Darth Malgus',s:'D',t:['Sith','Sith Empire','Force-Sensitive'],h:14,a:3,d:2,k:['agg','a_blow'],x:`Passive Unstoppable Onslaught: +1d6 Attack if he moved into contact and attacks the same turn. Action Crushing Blow: 4d6 Attack on an adjacent enemy; if it deals 2 or more damage, the target is Stunned.`}];
+{n:'Darth Malgus',s:'D',t:['Sith','Sith Empire','Force-Sensitive'],h:14,a:3,d:2,k:['agg','a_blow'],x:`Passive Unstoppable Onslaught: +1d6 Attack if he moved into contact and attacks the same turn. Action Crushing Blow: 4d6 Attack on an adjacent enemy; if it deals 2 or more damage, the target is Stunned.`},
+{n:'Padawan Obi-Wan',s:'L',t:['Jedi','Galactic Republic','Force-Sensitive'],h:10,a:3,d:2,k:['padawan','a_acrostrike'],x:`Passive Master & Apprentice (Qui-Gon Jinn): while on the same team as Qui-Gon Jinn, he gains +1d6 Attack. If Qui-Gon Jinn is defeated, Obi-Wan immediately recovers 3 Health and gains +1d6 Defense for the rest of the game. Action Acrobatic Strike: a 3d6 Attack against an enemy up to 2 spaces away (ignoring engagement to initiate the attack).`},
+{n:'Depa Billaba',s:'L',t:['Jedi','Galactic Republic','Force-Sensitive'],h:11,a:2,d:3,k:['depa','a_deflect'],x:`Passive Master & Apprentice (Mace Windu): while on the same team as Mace Windu, both she and Mace Windu gain +1d6 Defense. In addition, if Mace Windu attacks an adjacent target, Depa adds +1d6 Attack to her next attack against that same target in the same round. Action Form III Deflection: gains Taunt until the start of her next turn. Whenever an enemy attacks her while this Taunt is active, she rolls an additional +1d6 Defense.`},
+{n:'Rey',s:'L',t:['Jedi','Resistance','Force-Sensitive'],h:11,a:3,d:2,k:['dyad','e_jedi'],x:`Passive Dyad Echo: whenever an enemy character performs an action ability within 3 spaces of Rey, Rey gains +1d6 Attack on her next Attack action during that round. Epic All the Jedi: once per game, Rey removes Stun from herself and gains +2d6 Attack and +2d6 Defense until the end of the current round.`},
+{n:'Jedi Master Luke',s:'L',t:['Jedi','Resistance','Force-Sensitive'],h:12,a:2,d:3,k:['proj','a_will'],x:`Passive Force Projection: enemy characters cannot move adjacent to Jedi Master Luke unless they spend their entire movement action doing so. Action Will of the Force: target an enemy within range. Deal 2 unblockable damage and inflict Stun. Luke may then move up to 2 spaces away, breaking engagement.`},
+{n:'Sith Eternal Emperor',s:'D',t:['Sith','Force-Sensitive'],h:10,a:3,d:2,k:['essence','e_bass'],x:`Passive Essence Transfer: when the Sith Eternal Emperor is reduced to 0 Health, target an allied Dark Side character within 3 spaces. That ally receives -2 Health, and the Sith Eternal Emperor is restored to 4 Health instead of being defeated. Epic Bass Lightning Storm: once per game, perform a 4d6 Attack against every enemy character within 3 spaces simultaneously. Any enemy taking damage from this attack is Stunned.`},
+{n:'Kylo Ren',s:'D',t:['Sith','First Order','Force-Sensitive'],h:13,a:3,d:2,k:['temper','a_freeze'],x:`Passive Unstable Temper: whenever Kylo Ren takes damage from an attack, he gains +1d6 Attack on his next Attack action in that round. Action Force Freeze: target an enemy character within 2 spaces. Inflict Stun on that character and grant all Dark Side allies +1d6 Attack against that target until the start of Kylo Ren's next turn.`},
+{n:'Darth Talon',s:'D',t:['Sith','One Sith','Force-Sensitive'],h:10,a:3,d:2,k:['assassin','a_lethal'],x:`Passive Acrobatic Assassin: Darth Talon ignores enemy engagement movement restrictions, allowing her to move past adjacent enemies without stopping. Action Lethal Strike: make an Attack roll against an engaged enemy. If the defender rolls no 6s on their Defense dice, this attack deals +2 bonus damage.`},
+{n:'Darth Bane',s:'D',t:['Sith','Force-Sensitive'],h:15,a:4,d:3,k:['ro2','e_orb'],x:`Passive Rule of Two (Counts as 3 Units): Darth Bane counts as 3 characters for team-building squad limits. If there is exactly 1 other Sith ally on Bane's team, both Bane and that chosen Sith ally gain +2d6 Attack and +1d6 Defense for as long as both remain on the board. Epic Orbalisk Armor Surge: once per game, Darth Bane gains Taunt and becomes immune to all damage and status effects (including Stun) until the end of the round.`}];
 
 const IMG = {
   'Luke Skywalker (Jedi Knight)': 'portraits/lukeknight.png',
@@ -106,6 +114,14 @@ const IMG = {
   "Grand Master Yoda (High Council)": 'portraits/yodagrandmaster.png',
   "Cere Junda": 'portraits/cerejunda.png',
   "Meetra Surik (The Jedi Exile)": 'portraits/meetra.png',
+  'Padawan Obi-Wan': 'portraits/padawanobiwan.png',
+  'Depa Billaba': 'portraits/depabillaba.png',
+  'Rey': 'portraits/rey.png',
+  'Jedi Master Luke': 'portraits/jml.png',
+  'Sith Eternal Emperor': 'portraits/ese.png',
+  'Kylo Ren': 'portraits/kyloren.png',
+  'Darth Talon': 'portraits/darthtalon.png',
+  'Darth Bane': 'portraits/darthbane.png',
 };
 R.forEach(character => { character.img = IMG[character.n] || ''; });
 
@@ -150,7 +166,7 @@ const ABICON = {
   "Darth Vader|All Too Easy": "taunt",
   "Darth Vader|Intimidation": "atkdown",
   "Eighth Brother|Vaulting Disengage": "move",
-  "Eighth Brother|Blade Throw": "attack",
+  "Eighth Brother|Blade Throw": "multi",
   "Emperor Palpatine|Force Lightning": "stun",
   "Emperor Palpatine|Unlimited Power": "multi",
   "Ezra Bridger|Acrobatic Leap": "move",
@@ -214,6 +230,29 @@ const ABICON = {
   "The Stranger (Qimir)|Cortosis Helm": "defup",
   "The Stranger (Qimir)|Cortosis Short-Circuit": "stun",
   "Visas Marr|Force Sight": "defdown",
-  "Visas Marr|Healing Link": "heal"
+  "Visas Marr|Healing Link": "heal",
+  "Padawan Obi-Wan|Master & Apprentice (Qui-Gon Jinn)": "atkup",
+  "Padawan Obi-Wan|Acrobatic Strike": "multi",
+  "Depa Billaba|Master & Apprentice (Mace Windu)": "defup",
+  "Depa Billaba|Form III Deflection": "taunt",
+  "Rey|Dyad Echo": "atkup",
+  "Rey|All the Jedi": "atkup",
+  "Jedi Master Luke|Force Projection": "move",
+  "Jedi Master Luke|Will of the Force": "stun",
+  "Sith Eternal Emperor|Essence Transfer": "heal",
+  "Sith Eternal Emperor|Bass Lightning Storm": "stun",
+  "Kylo Ren|Unstable Temper": "atkup",
+  "Kylo Ren|Force Freeze": "stun",
+  "Darth Talon|Acrobatic Assassin": "move",
+  "Darth Talon|Lethal Strike": "multi",
+  "Darth Bane|Rule of Two (Counts as 3 Units)": "atkup",
+  "Darth Bane|Orbalisk Armor Surge": "taunt"
 };
 R.sort((a,b)=>a.n.localeCompare(b.n));
+
+// Squad building: every squad must add up to exactly SQUAD_SIZE. Most characters cost 1; Darth Bane counts as 3.
+const SQUAD_SIZE=4,SQUAD_COST={'Darth Bane':3};
+R.forEach(c=>{c.cost=SQUAD_COST[c.n]||1});
+const squadCost=l=>l.reduce((s,i)=>s+R[i].cost,0);
+const costOfNames=l=>l.reduce((s,n)=>{const r=R.find(x=>x.n===n);return s+(r?r.cost:99)},0);
+function randSquad(side){const o=[];let c=0;R.map((r,i)=>i).filter(i=>R[i].s==side).sort(()=>Math.random()-.5).forEach(i=>{if(c+R[i].cost<=SQUAD_SIZE){o.push(i);c+=R[i].cost}});return o}
