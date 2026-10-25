@@ -1,8 +1,8 @@
 // Online play: room codes over PeerJS (WebRTC), so no game server is needed.
 // Both browsers run the same game code with the same random seed, and every input made by the
 // active player is sent to the other browser, so both boards stay identical.
-const NETVER = '5', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forcebattles-';
-const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','back'];
+const NETVER = '6', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forcebattles-';
+const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','stay','back'];
 let NET = null;   // {role:'host'|'guest', peer, conn, code, me:0 (Light) | 1 (Dark), remote, busy, gone}
 const LOBBY = {mode:'menu', phase:'', msg:'', picks:[], ready:false, oppReady:false, oppPicks:null};
 const mine = () => !NET || (NET.me != null && G.turn == NET.me);

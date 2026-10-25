@@ -69,3 +69,10 @@ Light buffs: Depa (Attack 3d6; Mace's attack gives her +1d6 on ALL her attacks v
 Dark buffs: Bane (Health 16; Rule of Two +2d6 Attack and +2d6 Defense), Talon (Health 11; Lethal Strike 4d6), Maul (Health 12; Sith Hatred on any damage; Pursuit makes a 3d6 Attack and Stuns), Ventress (Health 11; Twin Lightsabers also vs a target engaged with another of her allies), Talzin (Health 10; Magick Infusion also buffs Sith allies), Seventh Sister (Health 11), Eighth Brother (Health 10; Blade Throw 4d6), Traya (Health 11; Web is -1d6 Defense vs all attacks this round; Saber Storm 3d6 each), Barriss (Health 11; Saber Disarm also Stuns).
 Rulings where the document was short: kept Talon's +2 damage when the defender rolls no 6s, Cal's Flurry +1d6, Ki-Adi's immunity to forced targeting, and Ahsoka's no-Defense on two 6s. "Engaged" for Ventress means the target is adjacent to another of her allies (otherwise every adjacent target would qualify).
 NETVER is now '5'.
+
+
+QUALITY OF LIFE (Oct 25)
+- Click your selected character again to deselect it (before you move, or after pressing Stay in place without having moved). Deselecting restores anything selecting had cleared, such as your own Taunt, and removes the log lines it added.
+- Because your own square used to mean "stay put", there is now a "Stay in place" button next to "Deselect" during the move step. The how-to-play text and hints say so.
+- Back button fixes: backing out of an Epic Action no longer uses it up, and Back is hidden once an attack has been made (so Tempered Rage/Split Saber Flurry can't be backed out of for a free extra action).
+- New online input "stay", so NETVER is now '6'.

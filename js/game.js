@@ -117,15 +117,16 @@ function nextTurn(){const o=1-G.turn;if(avail(o))G.turn=o;else if(!avail(G.turn)
 live().forEach(u=>{u.used=u.st.stun&&u.used?1:0;delete u.st.stun;delete u.st.exp;delete u.st.fort;delete u.st.shat;delete u.st.hate;delete u.st.tact;delete u.st.seek;delete u.st.web;delete u.st.marked;delete u.st.disarm;delete u.st.sever;delete u.st.focus;delete u.st.nopatk;delete u.st.conq;delete u.st.allj;if(u.st.orb){delete u.st.orb;delete u.st.taunt}u.atkd=0;u.rgu=0;if(u.st.short&&--u.st.short<=0)delete u.st.short});G.turn=o;if(!avail(o))G.turn=1-o}}
 function finish(){const s=G.sel;if(s){s.used=1;s.intim=0;s.sx=null;s.extra=0;s.fl=0;delete s.st.focus;live().forEach(v=>delete v.st.conq)}G.sel=null;G.mode=null;G.sp=null;if(!G.win)nextTurn();render()}
 function cell(x,y){if(G.win)return;const u=occ(x,y),s=G.sel;
+if(s&&u===s&&canDeselect()){doDeselect();return}
 if(G.mode=='move'){if(G.reach.has(x+','+y)){if(k(s,'rgm')&&s.eng0&&(x!=s.x||y!=s.y))s.rgu=1;s.x=x;s.y=y;G.mode='act';if(k(s,'conq'))adj(s).forEach(v=>{if(dist({x:s.sx,y:s.sy},v)>1)debuff(v,'conq')})}render();return}
 if(G.mode=='amove'){if(G.reach.has(x+','+y)&&!(u&&u!=G.mv)){G.mv.x=x;G.mv.y=y;finish()}return}
 if(G.mode=='tg'){if(u&&G.tg.includes(u))G.go(u);return}
 if(G.mode=='act'||G.mode=='split')return;
-G.insp=u||null;if(u&&u.team==G.turn&&!u.used&&!u.st.stun){G.sel=u;u.eng0=en(u).some(v=>dist(u,v)<=1);G.u.forEach(v=>{if(v.bfrom==u.id){delete v.st.barrier;delete v.bfrom}if(v.ffrom==u.id){delete v.st.frz;delete v.ffrom}});delete u.st.deflect;delete u.st.absorb;delete u.st.taunt;delete u.st.stance;delete u.st.sm;delete u.st.cd;G.mode='move';G.reach=reach(u,4,(k(u,'rgm')&&!u.rgu)||k(u,'assassin'));if(G.reach.size==1){G.mode='act';if(en(u).some(v=>dist(u,v)<=1))log(`${u.d.n} is engaged and can't move`)}u.n=0;u.sx=u.x;u.sy=u.y;
+G.insp=u||null;if(u&&u.team==G.turn&&!u.used&&!u.st.stun){G.pre=snapPre(u);G.abSnap=null;G.sel=u;u.eng0=en(u).some(v=>dist(u,v)<=1);G.u.forEach(v=>{if(v.bfrom==u.id){delete v.st.barrier;delete v.bfrom}if(v.ffrom==u.id){delete v.st.frz;delete v.ffrom}});delete u.st.deflect;delete u.st.absorb;delete u.st.taunt;delete u.st.stance;delete u.st.sm;delete u.st.cd;G.mode='move';G.reach=reach(u,4,(k(u,'rgm')&&!u.rgu)||k(u,'assassin'));if(G.reach.size==1){G.mode='act';if(en(u).some(v=>dist(u,v)<=1))log(`${u.d.n} is engaged and can't move`)}u.n=0;u.sx=u.x;u.sy=u.y;
 if(live(u.team).some(v=>k(v,'tact')&&v!=u&&dist(v,u)<=1))u.st.tact=1;u.intim=live().some(v=>k(v,'intim')&&v!=u&&dist(v,u)<=1);if(u.intim)log(`${u.d.n} is intimidated: -1 per Attack die this turn`)}render()}
 function doAtk(){const s=G.sel;G.mode='tg';G.tg=tf(s,en(s).filter(x=>dist(s,x)<=(k(s,'bryar')?3:1)));G.go=t=>{s.n=(s.n||0)+1;att(s,t);if(G.win!=null)return render();if(k(s,'vault')&&dist(s,t)<=1&&!s.dead){G.mv=s;G.mode='amove';G.reach=reach(s,1,1);return render()}if(s.extra&&s.n<2&&adj(s).length)doAtk();else finish()};render()}
 function dyad(s){en(s).forEach(v=>{if(k(v,'dyad')&&dist(v,s)<=3){v.st.hate=1;log(`${v.d.n}: Dyad Echo! +1d6 on her next Attack this round`)}})}
-function doAb(key){const s=G.sel,a=AB[key];if(a.ep)s.ep=1;if(key=='e_rage'||key=='e_flurry'){dyad(s);s.extra=1;if(key=='e_flurry')s.fl=1;return doAtk()}if(!a.tg||a.inst){dyad(s);a.go(s);return finish()}
+function doAb(key){const s=G.sel,a=AB[key];G.abSnap={ep:s.ep,extra:s.extra,fl:s.fl,rage:s.rage};if(a.ep)s.ep=1;if(key=='e_rage'||key=='e_flurry'){dyad(s);s.extra=1;if(key=='e_flurry')s.fl=1;return doAtk()}if(!a.tg||a.inst){dyad(s);a.go(s);return finish()}
 G.mode='tg';G.tg=a.atk?tf(s,a.tg(s)):a.tg(s);G.go=t=>{log(`${s.d.n}: ${a.l.split(' (')[0]} → ${t.d.n}`);dyad(s);if(a.go(s,t)!==1)finish();else render()};render()}
 const stTxt=u=>[u.st.stun&&'Stunned',u.st.exp&&'Exposed (-1d6 Def)',u.st.absorb&&'+1d6 Def (Absorb)',isT(u)&&'🎯 Taunt',u.st.barrier&&'+2d6 Def (Barrier)',u.st.stance&&'+1d6 Def (Stance)',u.st.cd&&'Counter: 1 dmg to attackers',u.st.sever&&'Severed (no passives or abilities)',u.st.focus&&'+1d6 Attack (Focus)',u.st.disarm&&'-1d6 Attack (Disarm)',u.st.marked&&'Marked (+1d6 Attack for foes)',u.st.seek&&'Marked by ID9',u.st.shat&&'Shattered (0d6 Def)',u.st.nopatk&&'Cannot Attack',u.st.short&&'Base Attack 1d6',u.st.tact&&'+1d6 Def (Revan)',u.st.fort&&'+1d6 Def (round)',G.ben[u.team]&&'+1d6 Def (Ben)',u.mourn&&'+1d6 Def (grief)',u.st.deflect&&u.st.taunt&&'+1d6 Def vs attacks (Deflection)',u.st.allj&&'+2d6 Attack and Defense (All the Jedi)',u.st.frz&&'Frozen (+1d6 Attack for Dark Side)',u.st.orb&&'Immune (Orbalisk Armor)',u.st.web&&'Betrayal\'s Web (-1d6 Def)',u.ep&&'Epic used'].filter(Boolean).join(' · ');
 function parseAbs(r){const out=[],re=/(Passive|Action|Epic) ([^:]+): ([\s\S]*?)(?=\s(?:Passive|Action|Epic) [^:]+: |$)/g;let m;
@@ -146,7 +147,7 @@ function homeBar(r){const rng=r.k.includes('bryar')?3:1;let h='<div class="abbar
 h+=abBtn({name:'Attack',type:'Basic Attack',desc:`Roll ${r.a}d6 against an enemy ${rng>1?'up to 3 spaces away':'adjacent to you'}. The difference between the dice totals is damage.`,cls:'atk',icon:'attack-'+sideIc(r)});
 r.abs.forEach(a=>{const clk=a.key&&AB[a.key],epic=a.type=='Epic';h+=abBtn({name:a.name,type:a.type=='Passive'?'Passive':(epic?(clk?'Epic Action (once per game)':'Epic Action (automatic)'):(clk?'Action':'Automatic')),desc:a.desc,cls:a.type=='Passive'||!clk?'pas':(epic?'epic':'act'),icon:abIcon(r,a)})});return h+'</div>'}
 function abBar(u,live){const sil=en(u).some(v=>k(v,'manip')&&dist(v,u)<=1);let h='<div class="abbar">';
-const notLive=G.mode=='move'?'Finish moving first (click a green square, or your own square to stay).':'Select a unit of the side whose turn it is to use this.';
+const notLive=G.mode=='move'?'Finish moving first (click a green square, or press Stay in place).':'Select a unit of the side whose turn it is to use this.';
 const rng=k(u,'bryar')?3:1,can=en(u).some(x=>dist(u,x)<=rng)&&!u.n&&!u.st.nopatk&&!fxDis(u);
 h+=abBtn({name:'Attack',type:'Basic Attack',desc:`Roll ${u.d.a}d6 against an enemy ${rng>1?'up to 3 spaces away':'adjacent to you'}. The difference between the dice totals is damage.`,cls:'atk',icon:'attack-'+sideIc(u.d),preview:'attack',on:live&&can,click:'doAtk()',note:live?(u.st.nopatk?'Cannot Attack this round.':u.n?'Already attacked.':can?'':'No enemy in range.'):notLive});
 u.d.abs.forEach(a=>{const AB1=a.key&&AB[a.key];
@@ -172,7 +173,7 @@ let h=`<div class="selection-header"><button onclick="LOBBY.mode='menu';render()
 function render(){let h='';TIPS=[];if(typeof document.getElementById=='function'){const t=document.getElementById('tip');if(t)t.style.display='none'}
 if(!G){prng=Math.random;if(LOBBY.mode=='local')selectScreen();else lobbyScreen();uxAfterRender();return}
 const s=G.sel;
-h+=G.win!=null?`<div class="bar ${G.win?'D':'L'}">🏆 ${G.win?'Dark':'Light'} Side wins! <button onclick="endGame()">${NET?'Rematch':'New game'}</button></div>`:`<div class="bar ${G.turn?'D':'L'}">${G.turn?'Dark':'Light'} Side's turn · Round ${G.round}${G.mode=='move'?' — click a green square to move (or your own square to stay)':G.mode=='tg'?' — click a red target':G.mode=='amove'?' — move your ally (green)':G.mode=='split'?' — split your Attack dice':s?' — choose an action':' — select one of your units'}</div>`;
+h+=G.win!=null?`<div class="bar ${G.win?'D':'L'}">🏆 ${G.win?'Dark':'Light'} Side wins! <button onclick="endGame()">${NET?'Rematch':'New game'}</button></div>`:`<div class="bar ${G.turn?'D':'L'}">${G.turn?'Dark':'Light'} Side's turn · Round ${G.round}${G.mode=='move'?' — click a green square to move, press Stay in place, or click your unit again to deselect':G.mode=='tg'?' — click a red target':G.mode=='amove'?' — move your ally (green)':G.mode=='split'?' — split your Attack dice':s?' — choose an action':' — select one of your units'}</div>`;
 h+=onlineBar();h+='<div class="row"><div class="col"><div class="board">';
 for(let y=0;y<8;y++)for(let x=0;x<8;x++){const u=occ(x,y);let c='c';
 if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
@@ -180,13 +181,13 @@ h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="backgr
 h+='</div></div><div class="col">';
 if(s&&!G.win){h+='<div class="actionbar">'+info(s)+abBar(s,G.mode=='act'&&mine())+'<div class="bt">';
 if(!mine()){}
-else if(G.mode=='act'){h+='<button onclick="finish()">End activation</button>'}
-else if(G.mode=='move')h+='<button onclick="deselect()">Deselect</button>';
+else if(G.mode=='act'){h+='<button onclick="finish()">End activation</button>'+(canDeselect()?'<button onclick="deselect()">Deselect</button>':'')}
+else if(G.mode=='move')h+='<button onclick="stay()">Stay in place</button><button onclick="deselect()">Deselect</button>';
 else if(G.mode=='split'){const n=G.sp.n||s.d.a,two=G.sp.b;h+=`Split dice vs ${G.sp.a.d.n}${two?' / '+two.d.n:''}:<br>`;for(let x=two?0:n;x<=n;x++)h+=`<button onclick="resolveSplit(${x})">${x} | ${n-x}</button>`}
 else if(G.mode=='tg'&&G.sq){h+=`Saber Storm: click up to 3 targets (${G.sq.length} chosen)<br><button onclick="resolveStorm()">Strike now</button>`}
 else if(G.mode=='quad'){h+=`Quad Strike on ${G.qt.d.n}:<br><button onclick="resolveQuad(0)">Single 4d6 attack</button>`;adj(s).filter(x=>x!=G.qt).forEach(x=>{h+=`<button onclick="resolveQuad(${x.id})">Split 4d6 with ${x.d.n}</button>`})}
 else if(G.mode=='amove')h+='<button onclick="finish()">Skip move</button>';
-else h+='<button onclick="back()">Back</button>';h+='</div></div>'}
+else if(!(s.n>=1))h+='<button onclick="back()">Back</button>';h+='</div></div>'}
 else if(G.insp&&!G.insp.dead)h+=info(G.insp)+abBar(G.insp,false);
 h+=uxCombatHtml()+uxLogHtml()+'</div></div>';$('#app').innerHTML=h;uxAfterRender()}
 if(typeof document.addEventListener=='function'){const tip=document.createElement('div');tip.id='tip';document.body.appendChild(tip);
@@ -201,8 +202,12 @@ const at=e=>e.target.closest&&e.target.closest('[data-ti]');
 document.addEventListener('mouseover',e=>{const t=at(e);if(!t){if(!matchMedia('(hover:none)').matches)tip.style.display='none';return}tip.innerHTML=TIPS[t.dataset.ti]||'';tip.style.display='block';place(e.clientX,e.clientY)});
 document.addEventListener('mousemove',e=>{if(tip.style.display=='block'&&at(e))place(e.clientX,e.clientY)});
 document.addEventListener('click',e=>{const t=at(e);if(t&&matchMedia('(hover:none)').matches){tip.innerHTML=TIPS[t.dataset.ti]||'';tip.style.display='block';const r=t.getBoundingClientRect();place(r.left,r.bottom)}else if(!t)tip.style.display='none'})}
-function deselect(){G.sel=null;G.mode=null;render()}
-function back(){G.mode='act';render()}
+function canDeselect(){const s=G.sel;return !!s&&(G.mode=='move'||(G.mode=='act'&&s.x==s.sx&&s.y==s.sy&&!(s.n>0)))}
+function snapPre(u){return{id:u.id,log:G.log.slice(),u:G.u.map(v=>({st:{...v.st},bfrom:v.bfrom,ffrom:v.ffrom,eng0:v.eng0,n:v.n,sx:v.sx,sy:v.sy,intim:v.intim,rgu:v.rgu}))}}
+function doDeselect(){const P=G.pre;if(P&&G.sel&&G.sel.id===P.id){G.u.forEach((v,i)=>{const o=P.u[i];v.st=o.st;v.bfrom=o.bfrom;v.ffrom=o.ffrom;v.eng0=o.eng0;v.n=o.n;v.sx=o.sx;v.sy=o.sy;v.intim=o.intim;v.rgu=o.rgu});G.log=P.log}G.pre=null;G.abSnap=null;G.sel=null;G.mode=null;G.reach=null;G.tg=null;G.go=null;render()}
+function deselect(){if(canDeselect())doDeselect()}
+function stay(){if(G.sel&&G.mode=='move')G.mode='act';render()}
+function back(){const s=G.sel;if(s&&s.n>=1)return;if(s&&G.abSnap){s.ep=G.abSnap.ep;s.extra=G.abSnap.extra;s.fl=G.abSnap.fl;s.rage=G.abSnap.rage}G.abSnap=null;G.mode='act';render()}
 function endGame(){if(NET){if(NET.role=='host')doRematch();else netSend({t:'again'})}else{G=null;render()}}
 if(typeof netInit=='function')netInit();
 render();
