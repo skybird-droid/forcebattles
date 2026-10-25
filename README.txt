@@ -61,3 +61,11 @@ NEW CHARACTERS (Oct 24 batch)
   * Orbalisk Armor Surge: Taunt and immunity both end at the end of the round.
   * Force Freeze's +1d6 lasts until Kylo is next selected (or dies).
 - NETVER is now '3': both players must load this version to play online.
+
+
+BALANCE PASS (Oct 25) - applied from the second Balance document (replaces the first attempt)
+Nerfs: Bastila (Battle Meditation adds +1 to the total of the first Attack, not to every die), Cal (Stasis Slow needs two 6s), Anakin (Aggressive Assault also needs him to have taken damage this game), Grievous (Health 12, Attack 3d6, no longer immune to pushes, Quad Strike is 4d6 against one enemy or 4d6 split between two), Sith Eternal Emperor (now also tagged Sith Eternal; Essence Transfer revives at 3 Health and costs the ally 3; Bass Lightning Storm 3d6), Malgus (Health 13; Onslaught only against a target with lower current Health; Crushing Blow 3d6).
+Light buffs: Depa (Attack 3d6; Mace's attack gives her +1d6 on ALL her attacks vs that target for the round), Ahsoka Fulcrum (one 6 = defender rolls -1d6 Defense), Ki-Adi-Mundi (Attack 3d6, immune to Stun, counter deals 2), Kanan (Attack 3d6, Force Sight vs all attacks), Visas (Attack 3d6; Healing Link also gives +1d6 Defense), Jolee (Health 11, Attack 3d6, heals 4), Grand Master Yoda (Health 8, Attack 3d6; Battle Focus lets the ally move), Hermit Yoda (Health 8, Attack 2d6, Defense 4d6, +1d6 Defense vs everyone; Do or Do Not also heals 3).
+Dark buffs: Bane (Health 16; Rule of Two +2d6 Attack and +2d6 Defense), Talon (Health 11; Lethal Strike 4d6), Maul (Health 12; Sith Hatred on any damage; Pursuit makes a 3d6 Attack and Stuns), Ventress (Health 11; Twin Lightsabers also vs a target engaged with another of her allies), Talzin (Health 10; Magick Infusion also buffs Sith allies), Seventh Sister (Health 11), Eighth Brother (Health 10; Blade Throw 4d6), Traya (Health 11; Web is -1d6 Defense vs all attacks this round; Saber Storm 3d6 each), Barriss (Health 11; Saber Disarm also Stuns).
+Rulings where the document was short: kept Talon's +2 damage when the defender rolls no 6s, Cal's Flurry +1d6, Ki-Adi's immunity to forced targeting, and Ahsoka's no-Defense on two 6s. "Engaged" for Ventress means the target is adjacent to another of her allies (otherwise every adjacent target would qualify).
+NETVER is now '5'.
