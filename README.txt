@@ -76,3 +76,10 @@ QUALITY OF LIFE (Oct 25)
 - Because your own square used to mean "stay put", there is now a "Stay in place" button next to "Deselect" during the move step. The how-to-play text and hints say so.
 - Back button fixes: backing out of an Epic Action no longer uses it up, and Back is hidden once an attack has been made (so Tempered Rage/Split Saber Flurry can't be backed out of for a free extra action).
 - New online input "stay", so NETVER is now '6'.
+
+
+SAVED SQUADS (Oct 25)
+- New file js/squads.js (loaded after characters.js). Squads are stored in this browser's localStorage under "fb-squads", by character name, so they keep working if the roster changes. Up to 30 per side. Clearing site data removes them.
+- Main menu > Saved Squads > Manage squads: pick a side, build a squad, name it, Save. Edit, update or delete (two clicks) saved squads. Saving a squad with an existing name on the same side overwrites it.
+- Local picker and online lobby: a "Saved squads" strip for your side. Click a squad to load it in one click, then Start / Ready. "Save squad" stores the current four (Darth Bane + one counts as full). Squads for the other side are never shown or loaded.
+- Online play needs no version bump: squads only fill in the picks you were already sending.
