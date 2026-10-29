@@ -59,7 +59,15 @@ const R=[
 {n:'Sith Eternal Emperor',s:'D',t:['Sith','Sith Eternal','Force-Sensitive'],h:10,a:3,d:2,k:['essence','e_bass'],x:`Passive Essence Transfer: when the Sith Eternal Emperor is reduced to 0 Health, target an allied Dark Side character within 3 spaces. That ally receives -3 Health, and the Sith Eternal Emperor is restored to 3 Health instead of being defeated. Epic Bass Lightning Storm: once per game, perform a 3d6 Attack against every enemy character within 3 spaces simultaneously. Any enemy taking damage from this attack is Stunned.`},
 {n:'Kylo Ren',s:'D',t:['Sith','First Order','Force-Sensitive'],h:13,a:3,d:2,k:['temper','a_freeze'],x:`Passive Unstable Temper: whenever Kylo Ren takes damage from an attack, he gains +1d6 Attack on his next Attack action in that round. Action Force Freeze: target an enemy character within 2 spaces. Inflict Stun on that character and grant all Dark Side allies +1d6 Attack against that target until the start of Kylo Ren's next turn.`},
 {n:'Darth Talon',s:'D',t:['Sith','One Sith','Force-Sensitive'],h:11,a:3,d:2,k:['assassin','a_lethal'],x:`Passive Acrobatic Assassin: Darth Talon ignores enemy engagement movement restrictions, allowing her to move past adjacent enemies without stopping. Action Lethal Strike: make a 4d6 Attack roll against an engaged enemy. If the defender rolls no 6s on their Defense dice, this attack deals +2 bonus damage.`},
-{n:'Darth Bane',s:'D',t:['Sith','Force-Sensitive'],h:16,a:4,d:3,k:['ro2','e_orb'],x:`Passive Rule of Two (Counts as 3 Units): Darth Bane counts as 3 characters for team-building squad limits. If there is exactly 1 other Sith ally on Bane's team, both Bane and that chosen Sith ally gain +2d6 Attack and +2d6 Defense for as long as both remain on the board. Epic Orbalisk Armor Surge: once per game, Darth Bane gains Taunt and becomes immune to all damage and status effects (including Stun) until the end of the round.`}];
+{n:'Darth Bane',s:'D',t:['Sith','Force-Sensitive'],h:16,a:4,d:3,k:['ro2','e_orb'],x:`Passive Rule of Two (Counts as 3 Units): Darth Bane counts as 3 characters for team-building squad limits. If there is exactly 1 other Sith ally on Bane's team, both Bane and that chosen Sith ally gain +2d6 Attack and +2d6 Defense for as long as both remain on the board. Epic Orbalisk Armor Surge: once per game, Darth Bane gains Taunt and becomes immune to all damage and status effects (including Stun) until the end of the round.`},
+{n:'Grand Master Luke Skywalker',s:'L',t:['Jedi','New Republic','Force-Sensitive'],h:13,a:3,d:3,k:['guidance','e_oneforce'],x:`Passive Grand Master's Guidance: all Jedi or New Republic allies within 2 spaces roll an additional +1d6 Defense when defending against attacks. Epic One with the Force: once per game, Luke removes all negative status conditions (including Stun) from himself and all Light Side allies on the board, and grants everyone +1d6 Attack for the rest of the round.`},
+{n:'Mara Jade Skywalker',s:'L',t:['Jedi','New Republic','Force-Sensitive'],h:11,a:3,d:2,k:['bond','a_vflurry'],x:`Passive Battle Bond (Luke Skywalker): while Mara Jade is on the same team as Grand Master Luke or Luke Skywalker, both she and Luke gain +1d6 Attack. Action Vanguard Flurry: move into engagement with an enemy up to 2 spaces away (ignoring engagement paths along the way) and perform an immediate 3d6 Attack.`},
+{n:'Cade Skywalker',s:'L',t:['Jedi','New Republic','Mercenary','Force-Sensitive'],h:12,a:3,d:2,k:['transfer','a_shatter'],x:`Passive Dark Transfer: whenever Cade deals 3 or more damage in a single attack to an adjacent enemy, an adjacent ally recovers 3 Health or Cade recovers 2 Health. Action Shatterpoint Blast: a 4d6 Attack against an adjacent enemy. If this attack deals damage, the defender is Stunned.`},
+{n:'Ben Skywalker',s:'L',t:['Jedi','New Republic','Force-Sensitive'],h:10,a:2,d:3,k:['rgm','a_conceal'],x:`Passive Infiltration Specialist: Ben Skywalker ignores enemy engagement movement restrictions once per round. Action Force Concealment: Ben gains +2d6 Defense until the start of his next turn. Enemies cannot select Ben as a target for attacks if there is another valid Light Side target within range.`},
+{n:'Darth Krayt',s:'D',t:['Sith','One Sith','Force-Sensitive'],h:14,a:4,d:2,k:['dragon','e_surge'],x:`Passive Dragon's Will: whenever a One Sith ally within 3 spaces of Darth Krayt performs an Attack action, that ally adds +1d6 Attack if Krayt is currently engaged with an enemy. Epic Dark Lightning Surge: once per game, perform a 3d6 Attack against up to two different enemy targets within 3 spaces simultaneously. Any target that takes damage from this attack is Stunned.`},
+{n:'Darth Nihl',s:'D',t:['Sith','One Sith','Force-Sensitive'],h:11,a:3,d:2,k:['longreach','a_exec'],x:`Passive Long-Handle Reach: Nihl can initiate melee Attack actions against targets up to 2 spaces away without needing to be directly adjacent. Action Executioner's Strike: a 3d6 Attack against an engaged target. If the target is holding Stun or Taunt, add +2d6 Attack to this roll.`},
+{n:'Darth Wyyrlok III',s:'D',t:['Sith','One Sith','Force-Sensitive'],h:10,a:2,d:3,k:['sorcery','a_delusion'],x:`Passive Sith Sorcery Aura: enemies starting their activation adjacent to Darth Wyyrlok III roll -1d6 Attack on all actions during that turn. Action Memory Delusion: target an enemy within 2 spaces. Force that enemy to gain Stun. If the target was already Stunned, deal 2 unblockable damage instead.`},
+{n:'Darth Stryfe',s:'D',t:['Sith','One Sith','Force-Sensitive'],h:13,a:3,d:2,k:['enforcer','a_vanguard'],x:`Passive Brutal Enforcer: while Darth Stryfe is adjacent to Darth Krayt or Darth Wyyrlok III, he gains Taunt automatically at the start of every round until his first activation. Action Sith Vanguard: Darth Stryfe gains Taunt until the start of his next turn and performs a 3d6 Attack against an adjacent enemy.`}];
 
 const IMG = {
   'Luke Skywalker (Jedi Knight)': 'portraits/lukeknight.png',
@@ -122,6 +130,14 @@ const IMG = {
   'Kylo Ren': 'portraits/kyloren.png',
   'Darth Talon': 'portraits/darthtalon.png',
   'Darth Bane': 'portraits/darthbane.png',
+  'Grand Master Luke Skywalker': 'portraits/gml.png',
+  'Mara Jade Skywalker': 'portraits/marajadeskywalker.png',
+  'Cade Skywalker': 'portraits/cadesky.png',
+  'Ben Skywalker': 'portraits/benskywalker.png',
+  'Darth Krayt': 'portraits/darthkrayt.png',
+  'Darth Nihl': 'portraits/darthnihl.png',
+  'Darth Wyyrlok III': 'portraits/dwyyrlok3.png',
+  'Darth Stryfe': 'portraits/dstryfe.png',
 };
 R.forEach(character => { character.img = IMG[character.n] || ''; });
 
@@ -246,7 +262,23 @@ const ABICON = {
   "Darth Talon|Acrobatic Assassin": "move",
   "Darth Talon|Lethal Strike": "multi",
   "Darth Bane|Rule of Two (Counts as 3 Units)": "atkup",
-  "Darth Bane|Orbalisk Armor Surge": "taunt"
+  "Darth Bane|Orbalisk Armor Surge": "taunt",
+  "Grand Master Luke Skywalker|Grand Master's Guidance": "defup",
+  "Grand Master Luke Skywalker|One with the Force": "heal",
+  "Mara Jade Skywalker|Battle Bond (Luke Skywalker)": "atkup",
+  "Mara Jade Skywalker|Vanguard Flurry": "multi",
+  "Cade Skywalker|Dark Transfer": "heal",
+  "Cade Skywalker|Shatterpoint Blast": "multi",
+  "Ben Skywalker|Infiltration Specialist": "move",
+  "Ben Skywalker|Force Concealment": "defup",
+  "Darth Krayt|Dragon's Will": "atkup",
+  "Darth Krayt|Dark Lightning Surge": "stun",
+  "Darth Nihl|Long-Handle Reach": "fb",
+  "Darth Nihl|Executioner's Strike": "multi",
+  "Darth Wyyrlok III|Sith Sorcery Aura": "atkdown",
+  "Darth Wyyrlok III|Memory Delusion": "stun",
+  "Darth Stryfe|Brutal Enforcer": "taunt",
+  "Darth Stryfe|Sith Vanguard": "multi"
 };
 R.sort((a,b)=>a.n.localeCompare(b.n));
 

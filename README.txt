@@ -83,3 +83,17 @@ SAVED SQUADS (Oct 25)
 - Main menu > Saved Squads > Manage squads: pick a side, build a squad, name it, Save. Edit, update or delete (two clicks) saved squads. Saving a squad with an existing name on the same side overwrites it.
 - Local picker and online lobby: a "Saved squads" strip for your side. Click a squad to load it in one click, then Start / Ready. "Save squad" stores the current four (Darth Bane + one counts as full). Squads for the other side are never shown or loaded.
 - Online play needs no version bump: squads only fill in the picks you were already sending.
+
+
+NEW CHARACTERS 3 (Oct 26): 68 characters now
+- Light: Grand Master Luke Skywalker, Mara Jade Skywalker, Cade Skywalker, Ben Skywalker. Dark: Darth Krayt, Darth Nihl, Darth Wyyrlok III, Darth Stryfe. Portraits are in portraits/ and mapped in js/characters.js; ability code is in js/game.js. New tags: New Republic, Mercenary.
+- Rulings made while implementing:
+  * Grand Master's Guidance gives its bonus to other Jedi / New Republic allies within 2 spaces, not to Luke himself. One with the Force clears Stun, Defense and Attack penalties, Sever, "cannot attack" and the other negative marks; Taunt is not treated as negative.
+  * Battle Bond counts any Luke (Luke Skywalker (Jedi Knight), Jedi Master Luke, Grand Master Luke) as "Luke".
+  * Dark Transfer chooses automatically: whichever heals more (an adjacent ally +3, or Cade +2); a tie goes to the ally.
+  * Force Concealment only hides Ben from Attack target choices (including abilities that make an Attack roll) when another valid target is in range. Area attacks and non-attack abilities can still pick him.
+  * Long-Handle Reach gives Nihl's basic Attack and Executioner's Strike a range of 2 ("engaged" is read as within his reach).
+  * Sith Sorcery Aura is checked when the enemy's activation starts, and takes one die from every Attack that turn, including fixed-dice abilities.
+  * Dark Lightning Surge uses one shared 3d6 roll against both targets, like Bass Lightning Storm.
+  * Brutal Enforcer also applies at the very start of the game.
+- NETVER is now '7': both players must load this version to play online.
