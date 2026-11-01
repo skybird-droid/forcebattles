@@ -220,7 +220,11 @@ const s=G.sel;
 h+=G.win!=null?`<div class="bar ${G.win?'D':'L'}">🏆 ${G.win?'Dark':'Light'} Side wins! <button onclick="endGame()">${NET?'Rematch':'New game'}</button></div>`:`<div class="bar ${G.turn?'D':'L'}">${G.turn?'Dark':'Light'} Side's turn · Round ${G.round}${G.mode=='move'?' — click a green square to move, press Stay in place, or click your unit again to deselect':G.mode=='tg'?' — click a red target':G.mode=='amove'?' — move your ally (green)':G.mode=='split'?' — split your Attack dice':s?' — choose an action':' — select one of your units'}</div>`;
 h+=onlineBar();h+='<div class="row"><div class="col"><div class="board">';
 for(let y=0;y<8;y++)for(let x=0;x<8;x++){const u=occ(x,y);let c='c';
+<<<<<<< HEAD
 if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove'||G.mode=='revspot')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
+=======
+if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
+>>>>>>> a4a39872436a640d66eee4cae3b6277a0a54d0e0
 h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} ${u?`title="${esc(u.d.n.replace(/ \(.*/,''))}" aria-label="${esc(u.d.n.replace(/ \(.*/,''))}"`:''} onclick="cell(${x},${y})">${u?`<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
 h+='</div></div><div class="col">';
 if(G.pend&&G.mode=='tg'&&!G.win){const S=G.u.find(v=>v.id===G.pend.id);h+='<div class="actionbar"><div class="card"><b>'+esc(S.d.n)+'</b> has been defeated.<br><i>His essence can take over any character within 2 spaces (friend or enemy). Click a highlighted character.</i></div><div class="bt">'+(mine()?'<button onclick="essPass()">No host: let him fade</button>':'<i>Waiting for the other player…</i>')+'</div></div>'}
