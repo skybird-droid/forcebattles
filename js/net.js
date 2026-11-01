@@ -1,11 +1,11 @@
 // Online play: room codes over PeerJS (WebRTC), so no game server is needed.
 // Both browsers run the same game code with the same random seed, and every input made by the
 // active player is sent to the other browser, so both boards stay identical.
-const NETVER = '7', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forcebattles-';
-const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','stay','back'];
+const NETVER = '8', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forcebattles-';
+const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','stay','back','resolveRevive','essPass'];
 let NET = null;   // {role:'host'|'guest', peer, conn, code, me:0 (Light) | 1 (Dark), remote, busy, gone}
 const LOBBY = {mode:'menu', phase:'', msg:'', picks:[], ready:false, oppReady:false, oppPicks:null};
-const mine = () => !NET || (NET.me != null && G.turn == NET.me);
+const mine = () => !NET || (NET.me != null && ctrl() == NET.me);
 const netSend = m => { try { if (NET && NET.conn && NET.conn.open) NET.conn.send(m) } catch (e) {} };
 const PC = () => typeof Peer != 'undefined' ? Peer : (globalThis.peerjs && globalThis.peerjs.Peer);
 function lobbyReset(){ LOBBY.picks = []; LOBBY.ready = false; LOBBY.oppReady = false; LOBBY.oppPicks = null }
@@ -25,7 +25,7 @@ function clearSess(){ try { localStorage.removeItem(SESSKEY) } catch (e) {} }
 function loadSess(){ try { const s = JSON.parse(localStorage.getItem(SESSKEY) || 'null'); if (s && s.start && Array.isArray(s.hist) && Date.now() - s.t < SESSMAX) return s } catch (e) {} return null }
 // a short fingerprint of the board; sent with every move so a desync is caught immediately
 function stateHash(){
-  const s = JSON.stringify([G.turn, G.round, G.win, G.u.map(u => [u.d.n, u.x, u.y, u.hp, u.dead ? 1 : 0, u.used, u.ep])]); let h = 2166136261;
+  const s = JSON.stringify([G.turn, G.round, G.win, G.u.map(u => [u.d.n, u.x, u.y, u.hp, u.dead ? 1 : 0, u.used, u.ep, u.team])]); let h = 2166136261;
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) }
   return h >>> 0;
 }
@@ -152,7 +152,7 @@ function netMsg(m){
   } else if (m.t == 'start' && NET.role == 'guest' && LOBBY.ready) onlineStart(m.seed, m.p0, m.p1);
   else if (m.t == 'again' && NET.role == 'host') doRematch();
   else if (m.t == 'ff' && G && G.win == null && m.side === 1 - NET.me) { applyForfeit(m.side); NET.hist.push(['__ff', [m.side]]); clearSess() }
-  else if (m.t == 'in' && G && G.win == null && G.turn != NET.me && INPUTS.includes(m.n) && Array.isArray(m.a)) {
+  else if (m.t == 'in' && G && G.win == null && ctrl() != NET.me && INPUTS.includes(m.n) && Array.isArray(m.a)) {
     applyEntry([m.n, m.a]); NET.hist.push([m.n, m.a]);
     if (m.h != null && m.h !== stateHash()) netDesync();
     saveSess(); if (G.win != null) clearSess();
@@ -240,7 +240,7 @@ function netInit(){
     const f = globalThis[n];
     globalThis[n] = function(...a){
       if (!NET || NET.busy || NET.remote) return f.apply(this, a);
-      if (NET.me == null || !G || G.turn != NET.me || G.win != null || NET.desync) { if (n == 'cell' && G) { const u = occ(a[0], a[1]); G.insp = u || null; render() } return }
+      if (NET.me == null || !G || ctrl() != NET.me || G.win != null || NET.desync) { if (n == 'cell' && G) { const u = occ(a[0], a[1]); G.insp = u || null; render() } return }
       let r; NET.busy = 1;
       try { r = f.apply(this, a) } finally { NET.busy = 0 }
       NET.hist.push([n, a]); netSend({t:'in', n, a, h:G ? stateHash() : null}); saveSess(); if (G && G.win != null) clearSess();

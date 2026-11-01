@@ -97,3 +97,19 @@ NEW CHARACTERS 3 (Oct 26): 68 characters now
   * Dark Lightning Surge uses one shared 3d6 roll against both targets, like Bass Lightning Storm.
   * Brutal Enforcer also applies at the very start of the game.
 - NETVER is now '7': both players must load this version to play online.
+
+CHARACTER OVERHAUL (Nov 1): NETVER is now '8'
+- Board tiles no longer show character names (hover for a tooltip); only portrait plus HP/status.
+- Jedi/Sith tags no longer give bonuses to allies: Bastila's Battle Meditation = Old Republic only; Satele's Resolve = Old Republic only; Grand Master Luke's Guidance = New Republic only; Mother Talzin's Magick Infusion = Night only; Darth Bane's Rule of Two needs exactly one other Sith ally who is not One Sith.
+  * Satele's Grand Master's Resolve had no code behind it before; it is now implemented ("engaged" = adjacent to an enemy).
+  * Still keyed on Jedi/Sith (not requested, untouched): Grand Inquisitor, Mace Windu, The Stranger, Grievous, Bastila (Fallen).
+- Jolee Bindo: Jedi tag removed, Old Republic added.
+- Ahsoka (Padawan): whenever an Anakin Skywalker ally uses Tempered Rage she gets a free basic Attack (her normal dice, enemy in her range, Taunt applies) before Anakin's attacks, even if she already acted. Folded into her passive; no free move.
+- Cade: Dark Transfer is now an Epic (no passive left). Returns a defeated ally at 4 Health on an empty square adjacent to Cade (player picks ally if several, then the square). The ally cannot activate until next round, keeps spent Epics/once-per-game flags. Ben's "one with the Force" and Ezra's Purrgil victims are not revivable.
+- Ezra: Blaster Hybrid Strike replaced by Epic Call of the Purrgil: a Stunned enemy within 4 and Ezra are both defeated. This bypasses survival effects (Lord of Pain, Essence Transfer, Ben) and the victims cannot be revived. If the target was the last enemy, Ezra's side wins.
+- Kyle Katarn: Force Absorb is now a passive: when he would be Stunned, the Stun is negated and he gains +1d6 Defense until his next turn (off while Severed). He now has two passives.
+- Rey: All the Jedi is now an automatic Epic: the first time she would be Stunned (once per game) the Stun is negated and she gets +2d6 Attack and Defense for the round.
+- Barriss (Fallen): added Action Healer's Touch (self or ally within 2 recovers 3 Health). Saber Disarm was later removed, so she now has Betrayer's Guile and Healer's Touch.
+- Count Dooku: Force Push replaced by Force Lightning (3d6 Attack, range 3, Stuns on damage).
+- Darth Vader: All Too Easy replaced by Force Choke (enemy within 3 takes 2 unblockable damage and is Stunned).
+- Sith Eternal Emperor: Essence Transfer rewritten. When he is defeated and any character is within 2 spaces, his player may take over one (friend or enemy) or decline. The host keeps its Health and abilities, joins his team and keeps its status/used flags. If the host's name contains Palpatine or Sidious, or it has the Clone trait, it also gains SEE's abilities (including the Epics, tracked per Epic). Taking an enemy can end the game if it was their last unit. Enemies that are immune (Jolee), binary or in Orbalisk Armor cannot be taken. The prompt is answered by SEE's owner even on the opponent's turn (see ctrl() in game.js and net.js).

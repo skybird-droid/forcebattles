@@ -11,28 +11,59 @@ const dist=(a,b)=>Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y));
 const occ=(x,y)=>live().find(u=>u.x==x&&u.y==y);
 const log=s=>{G.log.unshift(s);G.log.length=Math.min(G.log.length,60)};
 const isLuke=u=>u.d.n.startsWith('Luke');
-const r2=u=>live(u.team).some(b=>{if(!k(b,'ro2'))return false;const s=al(b).filter(v=>has(v,'Sith'));return s.length==1&&(u==b||u==s[0])});
+const isAnakin=u=>u.d.n.startsWith('Anakin Skywalker');
+const ctrl=()=>G.pend?G.pend.team:G.turn;
+const epDone=(u,key)=>u.eps?!!u.eps[key]:!!u.ep;
+const freeAdj=u=>{const a=[];for(let dx=-1;dx<2;dx++)for(let dy=-1;dy<2;dy++){const x=u.x+dx,y=u.y+dy;if((dx||dy)&&x>=0&&y>=0&&x<8&&y<8&&!occ(x,y))a.push(x+','+y)}return a};
+const fallen=u=>G.dead.filter(v=>v.team==u.team);
+const essHosts=S=>live().filter(v=>v!==S&&dist(S,v)<=2&&!k(v,'binary')&&!v.st.orb&&!(v.team!=S.team&&k(v,'immune')));
+const r2=u=>live(u.team).some(b=>{if(!k(b,'ro2'))return false;const s=al(b).filter(v=>has(v,'Sith')&&!has(v,'One Sith'));return s.length==1&&(u==b||u==s[0])});
 function aDice(a,d){let n=a.st.short?1:a.d.a;if(k(a,'bryar')&&dist(a,d)<=1)n++;if(d.st.seek&&has(a,'Inquisitorius'))n++;if(d.st.marked==a.team+1)n++;if(k(a,'rpur')&&d.stunR!=null&&G.round-d.stunR<=1)n++;if(k(a,'dark')&&a.hp<=4)n++;if(k(a,'fallen')&&!al(a).some(v=>dist(v,a)<=1))n++;if(a.fl)n++;if(k(a,'strike')&&a.hp<=4)n++;if(k(a,'hunt')&&has(d,'Jedi'))n++;
-if(k(a,'mara')&&isLuke(d))n+=2;if(k(a,'vaapad')&&has(d,'Sith'))n++;if(k(a,'twin')&&(d.st.stun||al(a).some(v=>dist(v,d)<=1)))n+=2;if(a.st.hate)n++;if(k(a,'bond')&&live(a.team).some(v=>v!==a&&v.d.n.includes('Luke')))n++;if(a.d.n.includes('Luke')&&live(a.team).some(v=>v!==a&&k(v,'bond')))n++;if(a.st.ofa)n++;if(has(a,'One Sith')&&live(a.team).some(v=>v!==a&&k(v,'dragon')&&dist(v,a)<=3&&en(v).some(e=>dist(e,v)<=1)))n++;if((k(a,'mara')||(k(a,'agg')&&a.tookDmg)||(k(a,'onslaught')&&d.hp<a.hp))&&a.sx!=null&&dist({x:a.sx,y:a.sy},d)>1)n++;if(k(a,'shii')&&dist(a,d)<=1&&adj(a).length>=2)n++;if((has(a,'Night')||has(a,'Sith'))&&live(a.team).some(v=>v!=a&&k(v,'magick')&&dist(v,a)<=3))n++;if(k(a,'guile')&&isT(d))n++;if(a.st.disarm)n--;if(a.st.focus)n++;
+if(k(a,'mara')&&isLuke(d))n+=2;if(k(a,'vaapad')&&has(d,'Sith'))n++;if(k(a,'twin')&&(d.st.stun||al(a).some(v=>dist(v,d)<=1)))n+=2;if(a.st.hate)n++;if(k(a,'bond')&&live(a.team).some(v=>v!==a&&v.d.n.includes('Luke')))n++;if(a.d.n.includes('Luke')&&live(a.team).some(v=>v!==a&&k(v,'bond')))n++;if(a.st.ofa)n++;if(has(a,'One Sith')&&live(a.team).some(v=>v!==a&&k(v,'dragon')&&dist(v,a)<=3&&en(v).some(e=>dist(e,v)<=1)))n++;if((k(a,'mara')||(k(a,'agg')&&a.tookDmg)||(k(a,'onslaught')&&d.hp<a.hp))&&a.sx!=null&&dist({x:a.sx,y:a.sy},d)>1)n++;if(k(a,'shii')&&dist(a,d)<=1&&adj(a).length>=2)n++;if(has(a,'Night')&&live(a.team).some(v=>v!=a&&k(v,'magick')&&dist(v,a)<=3))n++;if(k(a,'guile')&&isT(d))n++;if(a.st.disarm)n--;if(a.st.focus)n++;
 if(k(a,'padawan')&&live(a.team).some(v=>v.d.n==='Qui-Gon Jinn'))n++;if(k(a,'depa')&&a.dmark&&a.dmark.r==G.round&&a.dmark.id==d.id)n++;if(a.st.allj)n+=2;if(r2(a))n+=2;{const fs=d.st.frz&&live().find(v=>v.id===d.ffrom);if(fs&&fs.team===a.team&&a!==fs)n++}
 return Math.max(0,n)}
-function dDice(d,a){if(d.st.shat)return 0;if(k(a,'vsight'))return Math.max(0,d.d.d-(d.st.conq?1:0)-(d.st.exp?1:0));let n=d.d.d;if(k(d,'soresu')&&en(d).some(v=>dist(d,v)<=1))n++;if(G.ben[d.team])n++;if(d.st.absorb||d.st.stance)n++;if(has(d,'Inquisitorius')&&al(d).some(v=>has(v,'Inquisitorius')&&dist(v,d)<=1&&(k(d,'syn')||k(v,'syn'))))n++;if(d.st.conq)n--;if(d.st.tact)n++;if((has(a,'Sith')||has(a,'Sith Empire'))&&live(a.team).some(v=>k(v,'corrupt')&&dist(v,d)<=1))n--;if(d.st.fort)n++;if(k(d,'fsight'))n++;if(live(d.team).some(v=>v!=d&&k(v,'beacon')&&v.st.taunt&&dist(v,d)<=1))n++;n+=d.st.barrier||0;if(live(d.team).some(v=>v!=d&&k(v,'harmony')&&dist(v,d)<=1))n++;if(k(d,'size'))n++;if(d.st.exp)n--;if(d.st.web)n--;if((has(d,'Jedi')||has(d,'New Republic'))&&live(d.team).some(v=>v!==d&&k(v,'guidance')&&dist(v,d)<=2))n++;if(d.st.conceal)n+=2;
+function dDice(d,a){if(d.st.shat)return 0;if(k(a,'vsight'))return Math.max(0,d.d.d-(d.st.conq?1:0)-(d.st.exp?1:0));let n=d.d.d;if(k(d,'soresu')&&en(d).some(v=>dist(d,v)<=1))n++;if(G.ben[d.team])n++;if(d.st.absorb||d.st.stance)n++;if(has(d,'Inquisitorius')&&al(d).some(v=>has(v,'Inquisitorius')&&dist(v,d)<=1&&(k(d,'syn')||k(v,'syn'))))n++;if(d.st.conq)n--;if(d.st.tact)n++;if((has(a,'Sith')||has(a,'Sith Empire'))&&live(a.team).some(v=>k(v,'corrupt')&&dist(v,d)<=1))n--;if(d.st.fort)n++;if(k(d,'fsight'))n++;if(live(d.team).some(v=>v!=d&&k(v,'beacon')&&v.st.taunt&&dist(v,d)<=1))n++;n+=d.st.barrier||0;if(live(d.team).some(v=>v!=d&&k(v,'harmony')&&dist(v,d)<=1))n++;if(k(d,'size'))n++;if(d.st.exp)n--;if(d.st.web)n--;if(has(d,'New Republic')&&live(d.team).some(v=>v!==d&&k(v,'guidance')&&dist(v,d)<=2))n++;if(has(d,'Old Republic')&&live(d.team).some(v=>v!==d&&k(v,'resolve')&&dist(v,d)<=2&&en(v).some(e=>dist(e,v)<=1)))n++;if(d.st.conceal)n+=2;
 if(d.mourn)n++;if(k(d,'depa')&&live(d.team).some(v=>v.d.n==='Mace Windu'))n++;if(d.d.n==='Mace Windu'&&live(d.team).some(v=>v!==d&&k(v,'depa')))n++;if(d.st.deflect&&d.st.taunt)n++;if(d.st.allj)n+=2;if(r2(d))n+=2;
 return Math.max(0,n)}
 function heal(u,n){const b=u.hp;u.hp=Math.min(u.d.h,u.hp+n);if(u.hp>b)uxFx('heal',u,u.hp-b)}
 const debuff=(t,key,v=1)=>{if(k(t,'immune')||t.st.orb){log(`${t.d.n} is immune`);return}t.st[key]=v};
-function stun(u){if(k(u,'immune')||k(u,'binary')||u.st.orb){log(`${u.d.n} is immune to Stun`);uxFx('resist',u);return}if(k(u,'e_iaj')&&!u.ep){u.ep=1;u.st.fort=1;log(`🛡 ${u.d.n}: I Am a Jedi! Stun negated`);uxFx('resist',u);return}uxFx('stun',u);u.st.stun=1;u.stunR=G.round;log(`💫 ${u.d.n} is Stunned`)}
+function stun(u){if(k(u,'immune')||k(u,'binary')||u.st.orb){log(`${u.d.n} is immune to Stun`);uxFx('resist',u);return}if(k(u,'e_iaj')&&!u.ep){u.ep=1;u.st.fort=1;log(`🛡 ${u.d.n}: I Am a Jedi! Stun negated`);uxFx('resist',u);return}if(k(u,'absorb')){u.st.absorb=1;log(`🛡 ${u.d.n}: Force Absorb! Stun negated, +1d6 Defense until his next turn`);uxFx('resist',u);return}if(k(u,'e_jedi')&&!u.ep){u.ep=1;u.st.allj=1;log(`✨ ${u.d.n}: All the Jedi! Stun negated, +2d6 Attack and +2d6 Defense this round`);uxFx('resist',u);return}uxFx('stun',u);u.st.stun=1;u.stunR=G.round;log(`💫 ${u.d.n} is Stunned`)}
 function hurt(u,n){if(n<=0)return;if(u.st.orb){log(`${u.d.n} is immune to damage (Orbalisk Armor)`);uxFx('resist',u);return}u.tookDmg=1;if(k(u,'hate'))u.st.hate=1;u.hp-=n;uxFx('dmg',u,n);if(u.hp>0)return;
 if(k(u,'pain')&&!u.pu){u.pu=1;u.hp=4;u.st.taunt=1;log(`🔥 ${u.d.n}: Lord of Pain! Rises with 4 Health, taunting`);return}
-if(k(u,'essence')){const c=al(u).filter(v=>dist(u,v)<=3).sort((p,q)=>q.hp-p.hp||dist(u,p)-dist(u,q))[0];if(c){u.hp=3;uxFx('heal',u,3);log(`👁 ${u.d.n}: Essence Transfer! Drains ${c.d.n} (-3 Health) and rises with 3 Health`);hurt(c,3);return}}
+if(k(u,'essence')&&!G.pend&&essHosts(u).length){u.dead=1;G.pend={team:u.team,id:u.id};log(`👁 ${u.d.n} is defeated, but his essence reaches for a new host…`);uxFx('dead',u);return}
 if(k(u,'e_ben')&&!u.ep){u.ep=1;u.dead=1;G.ben[u.team]=1;log(`✨ ${u.d.n} becomes one with the Force! Allies gain +1d6 Defense`)}
-else{u.dead=1;G.dead.push(u);log(`💀 ${u.d.n} is defeated`);uxFx('dead',u);live(1-u.team).forEach(v=>{if(k(v,'hunger')&&dist(v,u)<=2){heal(v,4);log(`${v.d.n} feeds on the void (+4 Health)`)}});if(u.d.n==='Qui-Gon Jinn')al(u).forEach(v=>{if(k(v,'padawan')){heal(v,3);v.mourn=1;log(`💔 ${v.d.n} mourns his Master: +3 Health and +1d6 Defense for the rest of the game`)}});if(k(u,'living')){const f=al(u).filter(v=>dist(u,v)<=4).sort((p,q)=>p.hp/p.d.h-q.hp/q.d.h)[0];if(f){heal(f,4);delete f.st.stun;log(`${f.d.n} is restored by the Living Force (+4, Stun removed)`)}}}
+else die(u);
 if(!live(u.team).length)G.win=1-u.team}
-function att(a,d,o={}){let n=o.n??aDice(a,d);if(a.st.aurad)n=Math.max(0,n-1);delete a.st.hate;if(a.d.n==='Mace Windu'&&dist(a,d)<=1)al(a).forEach(v=>{if(k(v,'depa')){v.dmark={id:d.id,r:G.round};log(`${v.d.n} follows her Master's lead: +1d6 on her next attack against ${d.d.n} this round`)}});let ar=o.ar||rl(n);if(a.st.aurad&&o.ar)ar=ar.slice(0,Math.max(0,ar.length-1));let medB=0;if(!a.atkd&&(has(a,'Jedi')||has(a,'Old Republic'))&&live(a.team).some(v=>k(v,'medit')))medB=1;a.atkd=1;if(a.intim)ar=ar.map(x=>Math.max(0,x-1));
+function die(u){u.dead=1;G.dead.push(u);log(`💀 ${u.d.n} is defeated`);uxFx('dead',u);live(1-u.team).forEach(v=>{if(k(v,'hunger')&&dist(v,u)<=2){heal(v,4);log(`${v.d.n} feeds on the void (+4 Health)`)}});if(u.d.n==='Qui-Gon Jinn')al(u).forEach(v=>{if(k(v,'padawan')){heal(v,3);v.mourn=1;log(`💔 ${v.d.n} mourns his Master: +3 Health and +1d6 Defense for the rest of the game`)}});if(k(u,'living')){const f=al(u).filter(v=>dist(u,v)<=4).sort((p,q)=>p.hp/p.d.h-q.hp/q.d.h)[0];if(f){heal(f,4);delete f.st.stun;log(`${f.d.n} is restored by the Living Force (+4, Stun removed)`)}}}
+function vanish(u){if(u.dead)return;u.dead=1;u.hp=0;uxFx('dead',u);if(G.win==null&&!live(u.team).length)G.win=1-u.team}
+function essPrompt(){const S=G.u.find(v=>v.id===G.pend.id),c=essHosts(S);
+if(!c.length){G.pend=null;die(S);if(G.win==null&&!live(S.team).length)G.win=1-S.team;return false}
+G.mode='tg';G.tg=c;G.go=h=>possess(S,h);G.hint=null;render();return true}
+function essPass(){if(!G.pend)return;const S=G.u.find(v=>v.id===G.pend.id);G.pend=null;G.mode=null;G.tg=null;G.go=null;die(S);if(G.win==null&&!live(S.team).length)G.win=1-S.team;if(G.win==null)nextTurn();render()}
+function possess(S,H){const keep=/Palpatine|Sidious/.test(H.d.n)||has(H,'Clone'),d=Object.assign({},H.d,{s:S.d.s});
+if(keep){const xa=S.d.abs.filter(a=>!H.d.abs.some(b=>b.name===a.name)),xk=S.d.k.filter(q=>!H.d.k.includes(q)),eps={};
+d.k=[...H.d.k,...xk];d.x=[...H.d.abs,...xa].map(a=>a.type+' '+a.name+': '+a.desc).join(' ');parseAbs(d);
+d.abs.forEach(a=>{const o=xa.find(b=>b.name===a.name),p=H.d.abs.find(b=>b.name===a.name);if(o)a.src=o.src||S.d.n;else if(p&&p.src)a.src=p.src;
+if(a.type=='Epic'&&a.key)eps[a.key]=(o?epDone(S,a.key):epDone(H,a.key))?1:0});
+H.eps=eps;H.ep=Object.keys(eps).length&&Object.values(eps).every(Boolean)?1:0}
+H.d=d;H.team=S.team;
+log(`👁 ${S.d.n}'s essence takes over ${H.d.n}${keep?' and keeps the abilities of his former hosts':''}!`);
+G.pend=null;G.mode=null;G.tg=null;G.go=null;
+if(!live(1-S.team).length)G.win=S.team;
+if(G.win==null)nextTurn();render()}
+function doRevive(){const s=G.sel,L=fallen(s);dyad(s);if(L.length==1)return reviveSpot(L[0]);G.mode='rev';render()}
+function resolveRevive(id){const s=G.sel,v=s&&G.dead.find(x=>x.id==id&&x.team==s.team);if(G.mode!='rev'||!v)return;reviveSpot(v)}
+function reviveSpot(v){const s=G.sel;G.rv=v;G.reach=new Set(freeAdj(s));G.mode='revspot';render()}
+function skyJoin(s,next){const L=isAnakin(s)?al(s).filter(v=>k(v,'skypad')):[];
+const go=i=>{const v=L[i];if(!v)return next();const T=en(v).filter(x=>dist(v,x)<=atkRng(v));if(!T.length)return go(i+1);
+G.mode='tg';G.tg=tf(v,T);G.hint=`${v.d.n} joins ${s.d.n}'s Tempered Rage: click an enemy for her free Attack.`;
+G.go=t=>{G.hint=null;log(`⚔ ${v.d.n} strikes out of turn alongside ${s.d.n}`);att(v,t);if(G.win!=null)return render();go(i+1)};render()};
+go(0)}
+function att(a,d,o={}){let n=o.n??aDice(a,d);if(a.st.aurad)n=Math.max(0,n-1);delete a.st.hate;if(a.d.n==='Mace Windu'&&dist(a,d)<=1)al(a).forEach(v=>{if(k(v,'depa')){v.dmark={id:d.id,r:G.round};log(`${v.d.n} follows her Master's lead: +1d6 on her next attack against ${d.d.n} this round`)}});let ar=o.ar||rl(n);if(a.st.aurad&&o.ar)ar=ar.slice(0,Math.max(0,ar.length-1));let medB=0;if(!a.atkd&&has(a,'Old Republic')&&live(a.team).some(v=>k(v,'medit')))medB=1;a.atkd=1;if(a.intim)ar=ar.map(x=>Math.max(0,x-1));
 const as=sum(ar)+medB,six=ar.filter(x=>x==6).length;let nd=dDice(d,a);delete d.st.exp;
 const noDef=k(a,'jar')&&six>=2,jar1=!noDef&&k(a,'jar')&&six>=1;if(noDef)nd=0;else if(jar1)nd=Math.max(0,nd-1);const dr=rl(nd).map(x=>k(d,'corto')&&has(a,'Jedi')&&x<=2?6:(k(d,'formv')&&dist(a,d)<=1&&x==1?6:x)),ds=Math.max(0,sum(dr)-(k(a,'mak')&&en(a).filter(v=>dist(a,v)<=1).length==1?1:0));let dm=Math.max(0,as-ds);const lb=o.lethal&&dm>0&&!dr.includes(6);if(lb)dm+=2;const oi=d.st.orb&&dm>0;if(oi)dm=0;
 log(`${a.d.n} [${ar.join(',')}]=${as} vs ${d.d.n} [${dr.join(',')}]=${ds}${noDef?" (Jar'Kai: no defense)":''}${jar1?" (Jar'Kai: -1d6 Defense)":''}${lb?' (Lethal Strike: +2)':''}${oi?' (Orbalisk Armor: immune)':''} → ${dm} dmg`);uxRoll(a,d,ar,dr,as,ds,dm);
-if(dm>0&&d.st.sm&&!a.st.orb){a.st.marked=d.team+1;log(`${a.d.n} is marked: ${d.d.n}'s allies get +1d6 Attack against them this round`)}if(dm>0)live(d.team).forEach(v=>{if(v!=d&&k(v,'echo')&&dist(v,d)<=3)v.st.hate=1});if(dm>0&&(k(d,'hate')||k(d,'cathar')||k(d,'temper')))d.st.hate=1;hurt(d,dm);if(k(a,'transfer')&&dm>=3&&dist(a,d)<=1&&!a.dead)cadeHeal(a);if(d.dead&&k(a,'mara')&&isLuke(d)){heal(a,4);log('Mara recovers 4 Health')}
+if(dm>0&&d.st.sm&&!a.st.orb){a.st.marked=d.team+1;log(`${a.d.n} is marked: ${d.d.n}'s allies get +1d6 Attack against them this round`)}if(dm>0)live(d.team).forEach(v=>{if(v!=d&&k(v,'echo')&&dist(v,d)<=3)v.st.hate=1});if(dm>0&&(k(d,'hate')||k(d,'cathar')||k(d,'temper')))d.st.hate=1;hurt(d,dm);if(d.dead&&k(a,'mara')&&isLuke(d)){heal(a,4);log('Mara recovers 4 Health')}
 if(d.dead&&k(a,'siphon')){heal(a,5);log('Malak drains 5 Health')}if(dm>0&&!d.dead&&o.st)stun(d);if(k(d,'web')&&!a.dead&&al(d).some(v=>has(v,'Sith Triumvirate')&&dist(v,d)<=1)){debuff(a,'web');log(`${a.d.n} is caught in Betrayal's Web: -1d6 Defense against all attacks this round`)}if(d.st.cd&&!a.dead){log(`${a.d.n} is struck back for 2`);hurt(a,2)}if(dm>=3&&!d.dead&&k(d,'endure')&&!d.st.taunt){d.st.taunt=1;log(`🎯 ${d.d.n}: Monstrous Endurance, now taunting`)}if(k(d,'stasis')&&dr.filter(x=>x==6).length>=2&&!a.dead){log(`${d.d.n}: Stasis Slow!`);stun(a)}if(k(a,'brutal')&&dist(a,d)<=1&&!d.dead&&ar.includes(6)&&!d.st.stun){log('Brutal Sweep!');stun(d)}if(dm>0&&!d.dead&&!a.dead&&k(d,'e_counter')&&!d.ep&&!o.counter){d.ep=1;log(`⚔ ${d.d.n}: Snips' Counter!`);att(d,a,{n:4,counter:1})}return dm}
 const near4=u=>en(u).filter(x=>dist(u,x)<=4),adj=u=>en(u).filter(x=>dist(u,x)<=1);
 function adjFree(t,u){let b=null,bd=99;for(let dx=-1;dx<2;dx++)for(let dy=-1;dy<2;dy++){const x=t.x+dx,y=t.y+dy,o=occ(x,y);if((dx||dy)&&x>=0&&y>=0&&x<8&&y<8&&(!o||o==u)&&!en(u).some(l=>k(l,'proj')&&Math.max(Math.abs(x-l.x),Math.abs(y-l.y))<=1&&dist(u,l)>1)){const q=Math.max(Math.abs(x-u.x),Math.abs(y-u.y));if(q<bd){bd=q;b=[x,y]}}}return b}
@@ -49,18 +80,14 @@ e_unl:{l:'Epic: Unlimited Power 4d6 (all within 4)',atk:1,inst:1,ep:1,tg:near4,g
 e_shat:{l:'Epic: Shatterpoint (adjacent)',ep:1,tg:adj,go:(u,t)=>{debuff(t,'shat');log(`${t.d.n}: Defense is 0d6 this round`)}},
 a_stance:{l:'Defensive Stance: Taunt + 1d6 Defense',inst:1,tg:u=>[u],go:u=>{u.st.taunt=1;u.st.stance=1;log(`🎯 ${u.d.n} taunts and braces (+1d6 Defense)`)}},
 a_strike:{l:'Strike Me Down: Taunt',inst:1,tg:u=>[u],go:u=>{u.st.taunt=1;u.st.sm=1;log(`🎯 ${u.d.n} taunts: strike him down and his allies will answer`)}},
-a_easy:{l:'All Too Easy: Taunt + 3d6 Attack (adjacent)',atk:1,tg:adj,go:(u,t)=>{u.st.taunt=1;log(`🎯 ${u.d.n} taunts`);att(u,t)}},
 a_presence:{l:'Brutish Presence: Taunt + pull enemies in',inst:1,tg:u=>[u],go:u=>{u.st.taunt=1;const L=en(u).filter(t=>dist(u,t)<=2&&!adj(t).length);
 L.forEach(t=>{const sx=Math.sign(u.x-t.x),sy=Math.sign(u.y-t.y);for(const[dx,dy]of[[sx,sy],[sx,0],[0,sy]]){const x=t.x+dx,y=t.y+dy;if((dx||dy)&&x>=0&&y>=0&&x<8&&y<8&&!occ(x,y)){t.x=x;t.y=y;break}}});log(`🎯 ${u.d.n} taunts and pulls in ${L.length} enemies`)}},
 a_ataru:{l:'Ataru Strike (adjacent)',atk:1,tg:adj,go:(u,t)=>{const dm=att(u,t);if(dm>0&&G.win==null){G.mv=u;G.mode='amove';G.reach=reach(u,1,1);return 1}}},
 e_rage:{l:'Epic: Tempered Rage (2 attacks)',atk:1,ep:1,tg:adj,go:u=>{}},
 e_66:{l:'Epic: Execute Order 66 (range 4)',ep:1,tg:u=>near4(u).filter(t=>!k(t,'binary')&&!t.st.orb&&al(t).some(v=>dist(t,v)<=1)),go:(u,t)=>{G.mode='tg';G.tg=tf(t,al(t).filter(v=>dist(t,v)<=1));G.go=v=>{log(`${t.d.n} is forced to attack ${v.d.n}!`);att(t,v,{n:t.d.a});finish()};return 1}},
-a_push:{l:'Force Push (adjacent)',tg:adj,go:(u,t)=>{hurt(t,1);if(t.dead)return;pushAway(u,t,2)}},
 a_pursuit:{l:'Relentless Pursuit 3d6 (range 4)',atk:1,tg:u=>near4(u).filter(t=>adjFree(t,u)),go:(u,t)=>{const c=adjFree(t,u);u.x=c[0];u.y=c[1];att(u,t);if(!t.dead)stun(t)}},
 a_hitrun:{l:'Hit and Run (adjacent)',atk:1,tg:adj,go:(u,t)=>{att(u,t);if(!u.dead&&G.win==null){G.mv=u;G.mode='amove';G.reach=reach(u,2,1);return 1}}},
-a_absorb:{l:'Force Absorb',inst:1,tg:u=>[u],go:u=>{delete u.st.stun;u.st.absorb=1;log(`${u.d.n} absorbs: Stun removed, +1d6 Defense until his next turn`)}},
 a_seeker:{l:'ID9 Seeker Droid (range 4)',tg:near4,go:(u,t)=>{stun(t);debuff(t,'seek');log(`Inquisitorius allies get +1d6 Attack vs ${t.d.n} this round`)}},
-a_hybrid:{l:'Blaster Hybrid Strike (range 2)',atk:1,tg:u=>en(u).filter(x=>dist(u,x)<=2),go:(u,t)=>{att(u,t,{st:1})}},
 a_beacon:{l:'Protective Beacon: Taunt',inst:1,tg:u=>[u],go:u=>{u.st.taunt=1;log(`🎯 ${u.d.n} taunts; adjacent allies gain +1d6 Defense`)}},
 e_flurry:{l:'Epic: Split Saber Flurry (2 attacks, +1d6)',atk:1,ep:1,tg:adj,go:u=>{}},
 e_barrier:{l:'Epic: Force Barrier (ally within 4)',ep:1,tg:u=>al(u).filter(v=>dist(u,v)<=4),go:(u,t)=>{[u,t].forEach(v=>{v.st.barrier=2;v.bfrom=u.id});log(`${u.d.n} and ${t.d.n} gain +2d6 Defense until Cere's next turn`)}},
@@ -95,7 +122,6 @@ e_short:{l:'Epic: Cortosis Short-Circuit (adjacent)',ep:1,tg:adj,go:(u,t)=>{debu
 Object.assign(AB,{
 a_acrostrike:{l:'Acrobatic Strike 3d6 (range 2)',atk:1,tg:u=>en(u).filter(x=>dist(u,x)<=2),go:(u,t)=>{att(u,t)}},
 a_deflect:{l:'Form III Deflection: Taunt + 1d6 Defense when attacked',inst:1,tg:u=>[u],go:u=>{u.st.taunt=1;u.st.deflect=1;log(`🎯 ${u.d.n} taunts and deflects: +1d6 Defense against attacks on her`)}},
-e_jedi:{l:'Epic: All the Jedi (+2d6 Attack and Defense)',ep:1,inst:1,tg:u=>[u],go:u=>{delete u.st.stun;u.st.allj=1;log(`✨ ${u.d.n}: All the Jedi! Stun removed, +2d6 Attack and +2d6 Defense this round`)}},
 a_will:{l:'Will of the Force (range 4)',tg:near4,go:(u,t)=>{hurt(t,2);if(!t.dead)stun(t);if(G.win==null){G.mv=u;G.mode='amove';G.reach=reach(u,2,1);return 1}}},
 e_bass:{l:'Epic: Bass Lightning Storm 3d6 (all within 3)',atk:1,inst:1,ep:1,tg:u=>en(u).filter(x=>dist(u,x)<=3),go:u=>{let ar=rl(3);if(u.intim)ar=ar.map(x=>Math.max(0,x-1));log(`${u.d.n} unleashes the Bass Lightning Storm!`);AB.e_bass.tg(u).forEach(t=>att(u,t,{ar,st:1}))}},
 a_freeze:{l:'Force Freeze (range 2)',tg:u=>en(u).filter(x=>dist(u,x)<=2),go:(u,t)=>{stun(t);delete t.st.frz;debuff(t,'frz');if(t.st.frz){t.ffrom=u.id;log(`${t.d.n} is frozen: Dark Side allies get +1d6 Attack against them until ${u.d.n}'s next turn`)}}},
@@ -110,6 +136,11 @@ a_conceal:{l:'Force Concealment: +2d6 Defense, hard to target',inst:1,tg:u=>[u],
 e_surge:{l:'Epic: Dark Lightning Surge 3d6 (up to 2, range 3)',atk:1,ep:1,tg:u=>en(u).filter(x=>dist(u,x)<=3),go:(u,t)=>{G.sq=[t];G.sqKey='e_surge';const r=()=>tf(u,en(u).filter(x=>dist(u,x)<=3&&!G.sq.includes(x)));if(r().length){G.mode='tg';G.tg=r();G.go=t2=>{G.sq.push(t2);resolveStorm()}}else resolveStorm();return 1}},
 a_exec:{l:"Executioner's Strike 3d6 (range 2)",atk:1,tg:u=>en(u).filter(x=>dist(u,x)<=2),go:(u,t)=>{const b=t.st.stun||isT(t);if(b)log(`${t.d.n} is holding Stun or Taunt: +2d6 Attack`);att(u,t,{n:aDice(u,t)+(b?2:0)})}},
 a_delusion:{l:'Memory Delusion (range 2)',tg:u=>en(u).filter(x=>dist(u,x)<=2),go:(u,t)=>{if(t.st.stun){log(`${t.d.n} is already Stunned: 2 unblockable damage`);hurt(t,2)}else stun(t)}},
+a_dlight:{l:'Force Lightning 3d6 (range 3)',atk:1,tg:u=>en(u).filter(x=>dist(u,x)<=3),go:(u,t)=>{att(u,t,{st:1})}},
+a_choke:{l:'Force Choke (range 3)',tg:u=>en(u).filter(x=>dist(u,x)<=3),go:(u,t)=>{log(`${u.d.n} chokes ${t.d.n}`);hurt(t,2);if(!t.dead)stun(t)}},
+a_mend:{l:"Healer's Touch (self or ally within 2)",tg:u=>[u,...al(u).filter(v=>dist(u,v)<=2)],go:(u,t)=>{heal(t,3);log(`${u.d.n} mends ${t===u?'herself':t.d.n} (+3 Health)`)}},
+e_purrgil:{l:'Epic: Call of the Purrgil (Stunned enemy within 4)',ep:1,tg:u=>near4(u).filter(t=>t.st.stun&&!t.st.orb),go:(u,t)=>{log(`🐋 ${u.d.n} calls the purrgil: he and ${t.d.n} vanish into hyperspace!`);vanish(t);vanish(u)}},
+e_transfer:{l:'Epic: Dark Transfer (return a defeated ally with 4 Health)',ep:1,tg:u=>fallen(u).length&&freeAdj(u).length?[u]:[],go:()=>{}},
 a_vanguard:{l:'Sith Vanguard: Taunt + 3d6 Attack (adjacent)',atk:1,tg:adj,go:(u,t)=>{u.st.taunt=1;log(`🎯 ${u.d.n} taunts`);att(u,t)}}
 });
 AB.a_sweep={...AB.a_spin,l:'Saberstaff Sweep (adjacent)'};
@@ -127,19 +158,19 @@ const avail=t=>live(t).some(u=>!u.used&&!u.st.stun);
 function enforcerTaunt(){live().forEach(u=>{if(k(u,'enforcer')&&al(u).some(v=>(v.d.n==='Darth Krayt'||v.d.n==='Darth Wyyrlok III')&&dist(u,v)<=1)){u.st.taunt=1;log(`🎯 ${u.d.n}: Brutal Enforcer, taunting until he acts`)}})}
 function nextTurn(){const o=1-G.turn;if(avail(o))G.turn=o;else if(!avail(G.turn)){G.round++;log(`— Round ${G.round} —`);
 live().forEach(u=>{u.used=u.st.stun&&u.used?1:0;delete u.st.stun;delete u.st.exp;delete u.st.fort;delete u.st.shat;delete u.st.hate;delete u.st.tact;delete u.st.seek;delete u.st.web;delete u.st.marked;delete u.st.disarm;delete u.st.sever;delete u.st.focus;delete u.st.nopatk;delete u.st.conq;delete u.st.allj;delete u.st.ofa;if(u.st.orb){delete u.st.orb;delete u.st.taunt}u.atkd=0;u.rgu=0;if(u.st.short&&--u.st.short<=0)delete u.st.short});enforcerTaunt();G.turn=o;if(!avail(o))G.turn=1-o}}
-function finish(){const s=G.sel;if(s){s.used=1;s.intim=0;s.sx=null;s.extra=0;s.fl=0;delete s.st.focus;delete s.st.aurad;live().forEach(v=>delete v.st.conq)}G.sel=null;G.mode=null;G.sp=null;if(!G.win)nextTurn();render()}
+function finish(){const s=G.sel;if(s){s.used=1;s.intim=0;s.sx=null;s.extra=0;s.fl=0;delete s.st.focus;delete s.st.aurad;live().forEach(v=>delete v.st.conq)}G.sel=null;G.mode=null;G.sp=null;G.hint=null;G.rv=null;if(G.pend&&essPrompt())return;if(!G.win)nextTurn();render()}
 function cell(x,y){if(G.win)return;const u=occ(x,y),s=G.sel;
 if(s&&u===s&&canDeselect()){doDeselect();return}
 if(G.mode=='move'){if(G.reach.has(x+','+y)){if(k(s,'rgm')&&s.eng0&&(x!=s.x||y!=s.y))s.rgu=1;s.x=x;s.y=y;G.mode='act';if(k(s,'conq'))adj(s).forEach(v=>{if(dist({x:s.sx,y:s.sy},v)>1)debuff(v,'conq')})}render();return}
 if(G.mode=='amove'){if(G.reach.has(x+','+y)&&!(u&&u!=G.mv)){G.mv.x=x;G.mv.y=y;finish()}return}
+if(G.mode=='revspot'){if(G.reach.has(x+','+y)&&!u){const v=G.rv;G.dead.splice(G.dead.indexOf(v),1);v.dead=0;v.hp=Math.min(4,v.d.h);v.x=x;v.y=y;v.st={};v.used=1;v.n=0;v.sx=null;v.intim=0;log(`✨ ${s.d.n}: Dark Transfer! ${v.d.n} returns with ${v.hp} Health`);uxFx('heal',v,v.hp);finish()}return}
 if(G.mode=='tg'){if(u&&G.tg.includes(u))G.go(u);return}
-if(G.mode=='act'||G.mode=='split')return;
+if(G.mode=='act'||G.mode=='split'||G.mode=='rev')return;
 G.insp=u||null;if(u&&u.team==G.turn&&!u.used&&!u.st.stun){G.pre=snapPre(u);G.abSnap=null;G.sel=u;u.eng0=en(u).some(v=>dist(u,v)<=1);G.u.forEach(v=>{if(v.bfrom==u.id){delete v.st.barrier;delete v.bfrom}if(v.ffrom==u.id){delete v.st.frz;delete v.ffrom}});delete u.st.deflect;delete u.st.conceal;delete u.st.absorb;delete u.st.taunt;delete u.st.stance;delete u.st.sm;delete u.st.cd;G.mode='move';G.reach=reach(u,4,(k(u,'rgm')&&!u.rgu)||k(u,'assassin'));if(G.reach.size==1){G.mode='act';if(en(u).some(v=>dist(u,v)<=1))log(`${u.d.n} is engaged and can't move`)}u.n=0;u.sx=u.x;u.sy=u.y;
 if(live(u.team).some(v=>k(v,'tact')&&v!=u&&dist(v,u)<=1))u.st.tact=1;u.intim=live().some(v=>k(v,'intim')&&v!=u&&dist(v,u)<=1);if(u.intim)log(`${u.d.n} is intimidated: -1 per Attack die this turn`);delete u.st.aurad;if(en(u).some(v=>k(v,'sorcery')&&dist(v,u)<=1)){u.st.aurad=1;log(`${u.d.n} is shaken by the Sith Sorcery Aura: -1d6 Attack this turn`)}}render()}
 function doAtk(){const s=G.sel;G.mode='tg';G.tg=tf(s,en(s).filter(x=>dist(s,x)<=atkRng(s)));G.go=t=>{s.n=(s.n||0)+1;att(s,t);if(G.win!=null)return render();if(k(s,'vault')&&dist(s,t)<=1&&!s.dead){G.mv=s;G.mode='amove';G.reach=reach(s,1,1);return render()}if(s.extra&&s.n<2&&adj(s).length)doAtk();else finish()};render()}
-function cadeHeal(a){const f=al(a).filter(v=>dist(a,v)<=1).sort((p,q)=>(q.d.h-q.hp)-(p.d.h-p.hp))[0],ah=f?Math.min(3,f.d.h-f.hp):0,sh=Math.min(2,a.d.h-a.hp);if(ah>0&&ah>=sh){heal(f,3);log(`${a.d.n}: Dark Transfer! ${f.d.n} recovers 3 Health`)}else if(sh>0){heal(a,2);log(`${a.d.n}: Dark Transfer! He recovers 2 Health`)}}
 function dyad(s){en(s).forEach(v=>{if(k(v,'dyad')&&dist(v,s)<=3){v.st.hate=1;log(`${v.d.n}: Dyad Echo! +1d6 on her next Attack this round`)}})}
-function doAb(key){const s=G.sel,a=AB[key];G.abSnap={ep:s.ep,extra:s.extra,fl:s.fl,rage:s.rage};if(a.ep)s.ep=1;if(key=='e_rage'||key=='e_flurry'){dyad(s);s.extra=1;if(key=='e_flurry')s.fl=1;return doAtk()}if(!a.tg||a.inst){dyad(s);a.go(s);return finish()}
+function doAb(key){const s=G.sel,a=AB[key];G.abSnap={ep:s.ep,eps:s.eps&&{...s.eps},extra:s.extra,fl:s.fl,rage:s.rage};if(a.ep){s.ep=1;if(s.eps)s.eps[key]=1}if(key=='e_transfer')return doRevive();if(key=='e_rage'||key=='e_flurry'){dyad(s);s.extra=1;if(key=='e_flurry')s.fl=1;return key=='e_rage'?skyJoin(s,doAtk):doAtk()}if(!a.tg||a.inst){dyad(s);a.go(s);return finish()}
 G.mode='tg';G.tg=a.atk?tf(s,a.tg(s)):a.tg(s);G.go=t=>{log(`${s.d.n}: ${a.l.split(' (')[0]} → ${t.d.n}`);dyad(s);if(a.go(s,t)!==1)finish();else render()};render()}
 const stTxt=u=>[u.st.stun&&'Stunned',u.st.exp&&'Exposed (-1d6 Def)',u.st.absorb&&'+1d6 Def (Absorb)',isT(u)&&'🎯 Taunt',u.st.barrier&&'+2d6 Def (Barrier)',u.st.stance&&'+1d6 Def (Stance)',u.st.cd&&'Counter: 1 dmg to attackers',u.st.sever&&'Severed (no passives or abilities)',u.st.focus&&'+1d6 Attack (Focus)',u.st.disarm&&'-1d6 Attack (Disarm)',u.st.marked&&'Marked (+1d6 Attack for foes)',u.st.seek&&'Marked by ID9',u.st.shat&&'Shattered (0d6 Def)',u.st.nopatk&&'Cannot Attack',u.st.short&&'Base Attack 1d6',u.st.tact&&'+1d6 Def (Revan)',u.st.fort&&'+1d6 Def (round)',G.ben[u.team]&&'+1d6 Def (Ben)',u.mourn&&'+1d6 Def (grief)',u.st.deflect&&u.st.taunt&&'+1d6 Def vs attacks (Deflection)',u.st.allj&&'+2d6 Attack and Defense (All the Jedi)',u.st.frz&&'Frozen (+1d6 Attack for Dark Side)',u.st.orb&&'Immune (Orbalisk Armor)',u.st.ofa&&'+1d6 Attack (One with the Force)',u.st.conceal&&'Concealed (+2d6 Def, hard to target)',u.st.aurad&&'-1d6 Attack (Sorcery Aura)',u.st.web&&'Betrayal\'s Web (-1d6 Def)',u.ep&&'Epic used'].filter(Boolean).join(' · ');
 function parseAbs(r){const out=[],re=/(Passive|Action|Epic) ([^:]+): ([\s\S]*?)(?=\s(?:Passive|Action|Epic) [^:]+: |$)/g;let m;
@@ -152,7 +183,7 @@ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'
 const iconSrc=n=>(typeof ICON_DATA!=='undefined'&&ICON_DATA[n])||'icons/'+encodeURIComponent(n)+'.png';
 const CATICON={multi:'doubleorextraattack',taunt:'taunt',stun:'stun',heal:'healing',atkup:'+1d6',atkdown:'-1d6',defup:'+1d6def',defdown:'-1d6def',move:'movement',o66:'order66'};
 const sideIc=r=>r.s=='D'?'darkside':'lightside';
-function abIcon(r,a){const c=ABICON[r.n+'|'+a.name];return c=='attack'?'attack-'+sideIc(r):(CATICON[c]||sideIc(r))}
+function abIcon(r,a){const c=ABICON[(a.src||r.n)+'|'+a.name];return c=='attack'?'attack-'+sideIc(r):(CATICON[c]||sideIc(r))}
 function abBtn(o){const ti=TIPS.push(`<b>${esc(o.name)}</b> <i>${o.type}</i><br>${esc(o.desc.charAt(0).toUpperCase()+o.desc.slice(1))}${o.note?`<br><span class="nt">${esc(o.note)}</span>`:''}`)-1;
 const gl=o.name.split(/[ \-']+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
 return `<button type="button" class="ab ${o.cls}${o.on?' on':''}${o.used?' used':''}" data-ti="${ti}"${o.preview?` data-preview="${o.preview}"`:''}${o.on?` onclick="${o.click}"`:''}><span class="gl">${gl}</span><img src="${iconSrc(o.icon)}" alt="" onerror="this.remove()"></button>`}
@@ -164,10 +195,10 @@ const notLive=G.mode=='move'?'Finish moving first (click a green square, or pres
 const rng=atkRng(u),can=en(u).some(x=>dist(u,x)<=rng)&&!u.n&&!u.st.nopatk&&!fxDis(u);
 h+=abBtn({name:'Attack',type:'Basic Attack',desc:`Roll ${u.d.a}d6 against an enemy ${rng>1?'up to '+rng+' spaces away':'adjacent to you'}. The difference between the dice totals is damage.`,cls:'atk',icon:'attack-'+sideIc(u.d),preview:'attack',on:live&&can,click:'doAtk()',note:live?(u.st.nopatk?'Cannot Attack this round.':u.n?'Already attacked.':can?'':'No enemy in range.'):notLive});
 u.d.abs.forEach(a=>{const AB1=a.key&&AB[a.key];
-if(!AB1){const sev=a.type=='Passive'&&u.st.sever;h+=abBtn({name:a.name,type:a.type=='Passive'?'Passive':(a.type=='Epic'?'Epic Action (automatic)':'Automatic'),desc:a.desc,cls:'pas',icon:abIcon(u.d,a),note:sev?'Severed: inactive this round.':(a.type=='Passive'?'':'Triggers automatically.'),used:a.type=='Epic'&&u.ep});return}
+if(!AB1){const sev=a.type=='Passive'&&u.st.sever;h+=abBtn({name:a.name,type:a.type=='Passive'?'Passive':(a.type=='Epic'?'Epic Action (automatic)':'Automatic'),desc:a.desc,cls:'pas',icon:abIcon(u.d,a),note:sev?'Severed: inactive this round.':(a.type=='Passive'?'':'Triggers automatically.'),used:a.type=='Epic'&&epDone(u,a.key)});return}
 const epic=a.type=='Epic';let why='';
-if(!live)why=notLive;else if(epic&&u.ep)why='Already used this game.';else if(u.st.sever)why='Severed this round.';else if(u.st.nopatk&&AB1.atk)why='Cannot Attack this round.';else if(sil)why='Master Manipulator: you can only Attack.';else if(!AB1.tg(u).length)why='No valid target in range.';
-h+=abBtn({name:a.name,type:epic?'Epic Action (once per game)':'Action',desc:a.desc,cls:epic?'epic':'act',icon:abIcon(u.d,a),preview:a.key,on:live&&!why,click:`doAb('${a.key}')`,note:why,used:epic&&u.ep})});
+if(!live)why=notLive;else if(epic&&epDone(u,a.key))why='Already used this game.';else if(u.st.sever)why='Severed this round.';else if(u.st.nopatk&&AB1.atk)why='Cannot Attack this round.';else if(sil)why='Master Manipulator: you can only Attack.';else if(!AB1.tg(u).length)why='No valid target in range.';
+h+=abBtn({name:a.name,type:epic?'Epic Action (once per game)':'Action',desc:a.desc,cls:epic?'epic':'act',icon:abIcon(u.d,a),preview:a.key,on:live&&!why,click:`doAb('${a.key}')`,note:why,used:epic&&epDone(u,a.key)})});
 return h+'</div>'}
 const fxDis=u=>k(u,'dis');
 const info=u=>`<div class="card"><b>${u.d.n}</b> (${u.d.t.join(', ')})<br>HP ${u.hp}/${u.d.h} · Attack ${u.d.a}d6 · Defense ${u.d.d}d6<br><i>${stTxt(u)}</i></div>`;
@@ -189,14 +220,18 @@ const s=G.sel;
 h+=G.win!=null?`<div class="bar ${G.win?'D':'L'}">🏆 ${G.win?'Dark':'Light'} Side wins! <button onclick="endGame()">${NET?'Rematch':'New game'}</button></div>`:`<div class="bar ${G.turn?'D':'L'}">${G.turn?'Dark':'Light'} Side's turn · Round ${G.round}${G.mode=='move'?' — click a green square to move, press Stay in place, or click your unit again to deselect':G.mode=='tg'?' — click a red target':G.mode=='amove'?' — move your ally (green)':G.mode=='split'?' — split your Attack dice':s?' — choose an action':' — select one of your units'}</div>`;
 h+=onlineBar();h+='<div class="row"><div class="col"><div class="board">';
 for(let y=0;y<8;y++)for(let x=0;x<8;x++){const u=occ(x,y);let c='c';
-if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
-h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} onclick="cell(${x},${y})">${u?`${u.d.n.replace(/ \(.*/,'')}<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
+if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove'||G.mode=='revspot')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
+h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} ${u?`title="${esc(u.d.n.replace(/ \(.*/,''))}" aria-label="${esc(u.d.n.replace(/ \(.*/,''))}"`:''} onclick="cell(${x},${y})">${u?`<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
 h+='</div></div><div class="col">';
-if(s&&!G.win){h+='<div class="actionbar">'+info(s)+abBar(s,G.mode=='act'&&mine())+'<div class="bt">';
+if(G.pend&&G.mode=='tg'&&!G.win){const S=G.u.find(v=>v.id===G.pend.id);h+='<div class="actionbar"><div class="card"><b>'+esc(S.d.n)+'</b> has been defeated.<br><i>His essence can take over any character within 2 spaces (friend or enemy). Click a highlighted character.</i></div><div class="bt">'+(mine()?'<button onclick="essPass()">No host: let him fade</button>':'<i>Waiting for the other player…</i>')+'</div></div>'}
+else if(s&&!G.win){h+='<div class="actionbar">'+info(s)+abBar(s,G.mode=='act'&&mine())+'<div class="bt">';
 if(!mine()){}
 else if(G.mode=='act'){h+='<button onclick="finish()">End activation</button>'+(canDeselect()?'<button onclick="deselect()">Deselect</button>':'')}
 else if(G.mode=='move')h+='<button onclick="stay()">Stay in place</button><button onclick="deselect()">Deselect</button>';
 else if(G.mode=='split'){const n=G.sp.n||s.d.a,two=G.sp.b;h+=`Split dice vs ${G.sp.a.d.n}${two?' / '+two.d.n:''}:<br>`;for(let x=two?0:n;x<=n;x++)h+=`<button onclick="resolveSplit(${x})">${x} | ${n-x}</button>`}
+else if(G.mode=='rev'){h+='Dark Transfer: choose the ally to bring back (returns with 4 Health):<br>';fallen(s).forEach(v=>{h+=`<button onclick="resolveRevive(${v.id})">${esc(v.d.n)}</button>`});h+='<button onclick="back()">Back</button>'}
+else if(G.mode=='revspot'){h+=`Dark Transfer: click a green square next to ${esc(s.d.n)} for ${esc(G.rv.d.n)}.<br><button onclick="back()">Back</button>`}
+else if(G.mode=='tg'&&G.hint){h+=esc(G.hint)+(s.n>=1?'':'<br><button onclick="back()">Back</button>')}
 else if(G.mode=='tg'&&G.sq){h+=`${G.sqKey=='e_surge'?'Dark Lightning: click up to 2 targets':'Saber Storm: click up to 3 targets'} (${G.sq.length} chosen)<br><button onclick="resolveStorm()">Strike now</button>`}
 else if(G.mode=='quad'){h+=`Quad Strike on ${G.qt.d.n}:<br><button onclick="resolveQuad(0)">Single 4d6 attack</button>`;adj(s).filter(x=>x!=G.qt).forEach(x=>{h+=`<button onclick="resolveQuad(${x.id})">Split 4d6 with ${x.d.n}</button>`})}
 else if(G.mode=='amove')h+='<button onclick="finish()">Skip move</button>';
@@ -220,7 +255,7 @@ function snapPre(u){return{id:u.id,log:G.log.slice(),u:G.u.map(v=>({st:{...v.st}
 function doDeselect(){const P=G.pre;if(P&&G.sel&&G.sel.id===P.id){G.u.forEach((v,i)=>{const o=P.u[i];v.st=o.st;v.bfrom=o.bfrom;v.ffrom=o.ffrom;v.eng0=o.eng0;v.n=o.n;v.sx=o.sx;v.sy=o.sy;v.intim=o.intim;v.rgu=o.rgu});G.log=P.log}G.pre=null;G.abSnap=null;G.sel=null;G.mode=null;G.reach=null;G.tg=null;G.go=null;render()}
 function deselect(){if(canDeselect())doDeselect()}
 function stay(){if(G.sel&&G.mode=='move')G.mode='act';render()}
-function back(){const s=G.sel;if(s&&s.n>=1)return;if(s&&G.abSnap){s.ep=G.abSnap.ep;s.extra=G.abSnap.extra;s.fl=G.abSnap.fl;s.rage=G.abSnap.rage}G.abSnap=null;G.mode='act';render()}
+function back(){const s=G.sel;if(s&&s.n>=1)return;if(s&&G.abSnap){s.ep=G.abSnap.ep;s.eps=G.abSnap.eps;s.extra=G.abSnap.extra;s.fl=G.abSnap.fl;s.rage=G.abSnap.rage}G.abSnap=null;G.rv=null;G.hint=null;G.mode='act';render()}
 function endGame(){if(NET){if(NET.role=='host')doRematch();else netSend({t:'again'})}else{G=null;render()}}
 if(typeof netInit=='function')netInit();
 render();
