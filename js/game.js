@@ -190,7 +190,7 @@ h+=G.win!=null?`<div class="bar ${G.win?'D':'L'}">🏆 ${G.win?'Dark':'Light'} S
 h+=onlineBar();h+='<div class="row"><div class="col"><div class="board">';
 for(let y=0;y<8;y++)for(let x=0;x<8;x++){const u=occ(x,y);let c='c';
 if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
-h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} onclick="cell(${x},${y})">${u?`${u.d.n.replace(/ \(.*/,'')}<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
+h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} ${u?`title="${esc(u.d.n.replace(/ \(.*/,''))}" aria-label="${esc(u.d.n.replace(/ \(.*/,''))}"`:''} onclick="cell(${x},${y})">${u?`<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
 h+='</div></div><div class="col">';
 if(s&&!G.win){h+='<div class="actionbar">'+info(s)+abBar(s,G.mode=='act'&&mine())+'<div class="bt">';
 if(!mine()){}

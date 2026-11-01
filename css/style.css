@@ -118,3 +118,7 @@ input{min-height:46px;padding:10px 13px;border:1px solid var(--ln);border-radius
 .squad-form{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.squad-form input{flex:1 1 220px;min-width:0}
 .squad-picked{display:flex;flex-wrap:wrap;gap:6px;min-height:34px;align-items:center}.sq-chipmini{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border-radius:999px;background:#1a2b41;border:1px solid #ffffff25;font-size:13px;font-weight:700;cursor:pointer}
 @media(max-width:700px){.squad-strip-actions{margin-left:0;width:100%}.squad-row{flex-direction:column;align-items:flex-start}}
+
+/* Board tiles show only portrait + HP/status; names are in the hover tooltip and side panel */
+.c.U{display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.c.U small{margin-top:0;width:100%;background:#000a;border-radius:3px;padding:1px 0;text-shadow:none}
