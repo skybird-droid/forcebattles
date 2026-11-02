@@ -5,7 +5,7 @@ const NETVER = '8', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forceb
 const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','stay','back','resolveRevive','essPass'];
 let NET = null;   // {role:'host'|'guest', peer, conn, code, me:0 (Light) | 1 (Dark), remote, busy, gone}
 const LOBBY = {mode:'menu', phase:'', msg:'', picks:[], ready:false, oppReady:false, oppPicks:null};
-const mine = () => !NET || (NET.me != null && ctrl() == NET.me);
+const mine = () => NET ? NET.me != null && ctrl() == NET.me : !aiTurn();
 const netSend = m => { try { if (NET && NET.conn && NET.conn.open) NET.conn.send(m) } catch (e) {} };
 const PC = () => typeof Peer != 'undefined' ? Peer : (globalThis.peerjs && globalThis.peerjs.Peer);
 function lobbyReset(){ LOBBY.picks = []; LOBBY.ready = false; LOBBY.oppReady = false; LOBBY.oppPicks = null }
@@ -210,6 +210,11 @@ function lobbyScreen(){
         <button class="btn-secondary btn-wide" onclick="LOBBY.mode='local';render()">Play locally <span aria-hidden="true">→</span></button>
         <div class="mode-note"><span class="mode-dot"></span> No room code required</div>
       </div>
+    </section>
+    <section class="menu-panel ai-panel">
+      <div class="panel-icon">◈</div><div class="panel-eyebrow">SOLO · YOU AGAINST THE COMPUTER</div>
+      <h3>VS Computer</h3><p>Pick a side and a squad, then battle a computer opponent that plays the other side.</p>
+      <button class="btn-secondary btn-wide" onclick="aiMenu()">Play vs computer <span aria-hidden="true">→</span></button>
     </section>
     <section class="menu-panel squads-panel">
       <div class="panel-icon">★</div><div class="panel-eyebrow">YOUR SQUADS · SAVED IN THIS BROWSER</div>

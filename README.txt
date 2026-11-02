@@ -113,3 +113,10 @@ CHARACTER OVERHAUL (Nov 1): NETVER is now '8'
 - Count Dooku: Force Push replaced by Force Lightning (3d6 Attack, range 3, Stuns on damage).
 - Darth Vader: All Too Easy replaced by Force Choke (enemy within 3 takes 2 unblockable damage and is Stunned).
 - Sith Eternal Emperor: Essence Transfer rewritten. When he is defeated and any character is within 2 spaces, his player may take over one (friend or enemy) or decline. The host keeps its Health and abilities, joins his team and keeps its status/used flags. If the host's name contains Palpatine or Sidious, or it has the Clone trait, it also gains SEE's abilities (including the Epics, tracked per Epic). Taking an enemy can end the game if it was their last unit. Enemies that are immune (Jolee), binary or in Orbalisk Armor cannot be taken. The prompt is answered by SEE's owner even on the opponent's turn (see ctrl() in game.js and net.js).
+
+VS COMPUTER (Nov 1) - js/ai.js
+- Main menu > VS Computer: pick Light or Dark and a squad; the computer gets a random squad for the other side. "New game" returns to that setup screen.
+- The computer plays through the same input functions as a click (cell, doAtk, doAb, finish, ...), one step every 0.65 s (AI_DELAY), so all rules, logs and effects are shared with normal play. Your clicks are blocked on its turn (clicking a unit still shows its info).
+- How it chooses: for each ready unit it tries every reachable square and scores the best action from there: expected damage and kill chance from the dice (aDice/dDice), bonuses for Stuns, heals of missing Health and buffs/Taunts near enemies. Epics need a clearly good moment. It does not look ahead to your reply.
+- Tested headless: 60 computer-vs-computer games finished with no errors; it won 138 of 150 games against a simple player that never moves and just attacks.
+- Online play is unchanged (no NETVER bump needed).

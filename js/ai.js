@@ -1,0 +1,187 @@
+// VS Computer mode: the computer plays one side of a local game.
+// It acts only through the same input functions a player's clicks use (cell, doAtk, doAb, ...),
+// one step at a time with a short pause, so every rule and animation works exactly as for a human.
+// Choices come from a simple estimate: expected damage and kill chance from the dice, plus rough
+// values for stuns, heals, buffs and Epics. It does not look ahead to the opponent's reply.
+let AI = null, AI_ME = 0;   // AI: {side, timer, acting, busy, plan, tgt, steps}; AI_ME: the side the player picked
+const AI_DELAY = 650;
+const aiOn = () => !!AI && !NET && LOBBY.mode == 'ai';
+const aiTurn = () => aiOn() && !!G && G.win == null && ctrl() == AI.side;
+
+// ---- setup screen ----
+function aiMenu(){ LOBBY.mode = 'ai'; AI = null; render() }
+function aiSide(t){ AI_ME = t; render() }
+function aiRandom(){ P[AI_ME] = randSquad(AI_ME ? 'D' : 'L'); render() }
+function aiStart(){
+  if (squadCost(P[AI_ME]) != SQUAD_SIZE) return;
+  if (AI && AI.timer) clearTimeout(AI.timer);
+  P[1 - AI_ME] = randSquad(AI_ME ? 'L' : 'D');
+  AI = {side:1 - AI_ME, timer:null, acting:0, busy:0, plan:null, tgt:null, steps:0};
+  start();
+}
+
+// ---- estimates ----
+const aiCdf = z => 1 / (1 + Math.exp(-1.702 * z)), aiPdf = z => Math.exp(-z * z / 2) / 2.5066;
+const aiWorth = t => 2 + t.d.a + ((t.d.cost || 1) > 1 ? 3 : 0);
+// n Attack dice against t: expected damage (capped at its Health), chance to deal any, chance to defeat it
+function aiHit(u, t, n){
+  if (t.st.orb) return {ed:0, hit:0, kill:0};
+  const dd = dDice(t, u), m = 3.5 * (n - dd), sd = Math.sqrt(2.92 * (n + dd)) || 1, z = m / sd;
+  return {ed:Math.min(t.hp, Math.max(0, sd * aiPdf(z) + m * aiCdf(z))), hit:1 - aiCdf((.5 - m) / sd), kill:1 - aiCdf((t.hp - .5 - m) / sd)};
+}
+function aiAtkScore(u, t, n, desc){
+  if (t.team == u.team) return -aiHit(u, t, n).ed * 2;
+  const h = aiHit(u, t, n);
+  return h.ed + h.kill * aiWorth(t) + (/Stun/.test(desc || '') && !t.st.stun ? h.hit * 2 : 0);
+}
+// best value and target of one Action/Epic ability, or null
+function aiAbValue(u, a, A, T){
+  const key = a.key, desc = a.desc || '', dice = +((A.l.match(/(\d)d6/) || [])[1]) || 0, nd = t => dice || aDice(u, t);
+  let best = null; const pick = (t, s) => { if (!best || s > best.score) best = {t, score:s} };
+  const foes = T.filter(t => t.team != u.team);
+  if (key == 'e_transfer') { const L = fallen(u); if (L.length) pick(u, 4 + Math.max(...L.map(v => v.d.a))) }
+  else if (key == 'e_purrgil') T.forEach(t => pick(t, 1 + t.hp + t.d.a - u.hp));
+  else if (key == 'e_rage' || key == 'e_flurry') T.forEach(t => pick(t, 1.8 * aiAtkScore(u, t, aDice(u, t) + (key == 'e_flurry' ? 1 : 0), desc)));
+  else if (key == 'e_saberstorm' || key == 'e_surge') {
+    const sc = foes.map(t => ({t, s:aiAtkScore(u, t, 3, desc)})).sort((x, y) => y.s - x.s), top = sc.slice(0, key == 'e_surge' ? 2 : 3);
+    if (top.length) pick(top[0].t, top.reduce((x, y) => x + y.s, 0));
+  }
+  else if (A.atk && A.inst) pick(u, T.reduce((x, t) => x + aiAtkScore(u, t, nd(t), desc), 0));
+  else if (A.atk) T.forEach(t => pick(t, aiAtkScore(u, t, nd(t), desc) + .5));
+  else T.forEach(t => {
+    if (t.team != u.team) {
+      const dm = +((desc.match(/(\d+) (?:unblockable )?damage/) || [])[1]) || 0;
+      let s = 2 + (dm ? Math.min(dm, t.hp) + (dm >= t.hp && !t.st.orb ? aiWorth(t) : 0) : 0);
+      if (/Stun/.test(desc) && !t.st.stun) s += t.used ? 1.5 : 2.5;
+      pick(t, s);
+    } else if (/recover|heal/i.test(desc)) {
+      const n = +((desc.match(/(?:recovers?|heals?)\D{0,24}(\d+)/i) || [])[1]) || 3;
+      pick(t, Math.min(t.d.h - t.hp, n) * 1.2);
+    } else pick(t, en(u).some(v => dist(v, t) <= 3) ? 2 : .5);
+  });
+  if (best && a.type == 'Epic' && key != 'e_transfer' && key != 'e_purrgil') best.score -= 2.5;   // save Epics for a strong moment
+  return best;
+}
+// the best thing u can do from where it stands: {kind:'atk'|'ab'|'none', key, t, score}
+function aiBest(u){
+  let best = {kind:'none', score:0};
+  const rng = atkRng(u);
+  if (!u.n && !u.st.nopatk && !fxDis(u)) tf(u, en(u).filter(x => dist(u, x) <= rng)).forEach(t => {
+    const s = aiAtkScore(u, t, aDice(u, t)); if (s > best.score) best = {kind:'atk', t, score:s};
+  });
+  if (en(u).some(v => k(v, 'manip') && dist(v, u) <= 1) || u.st.sever) return best;
+  u.d.abs.forEach(a => {
+    const A = a.key && AB[a.key];
+    if (!A || (a.type == 'Epic' && epDone(u, a.key)) || (u.st.nopatk && A.atk)) return;
+    let T = A.tg(u); if (A.atk) T = tf(u, T); if (!T.length) return;
+    const v = aiAbValue(u, a, A, T);
+    if (v && v.score > best.score) best = {kind:'ab', key:a.key, t:v.t, score:v.score};
+  });
+  return best;
+}
+// where to stand: close to the enemy, but a badly hurt unit avoids standing next to several
+function aiPos(u){
+  const E = en(u); if (!E.length) return 0;
+  const near = Math.min(...E.map(v => dist(u, v))), adjN = E.filter(v => dist(u, v) <= 1).length;
+  return -.3 * near - (u.hp <= u.d.h * .35 ? .8 * adjN : 0);
+}
+// try every square u can reach and keep the best spot and action
+function aiPlan(u){
+  const ox = u.x, oy = u.y, sq = reach(u, 4, (k(u, 'rgm') && !u.rgu) || k(u, 'assassin'));
+  let best = null;
+  try {
+    sq.forEach(q => {
+      const [x, y] = q.split(',').map(Number); u.x = x; u.y = y;
+      const s = aiBest(u).score + aiPos(u);
+      if (!best || s > best.score) best = {id:u.id, x, y, score:s};
+    });
+  } finally { u.x = ox; u.y = oy }
+  return best;
+}
+function aiPickTarget(s, T){
+  let best = null, bs = -Infinity;
+  T.forEach(t => { const v = t.team != s.team ? aiAtkScore(s, t, aDice(s, t)) : t.d.h - t.hp; if (v > bs) { bs = v; best = t } });
+  return best;
+}
+// a free square for a unit to step to after its action (Hit and Run, Dark Transfer): fewest enemies next to it
+function aiSafeSpot(u, foesOf){
+  let best = null, bs = Infinity;
+  G.reach.forEach(q => {
+    const [x, y] = q.split(',').map(Number), o = occ(x, y); if (o && o != u) return;
+    const n = en(foesOf).filter(v => dist({x, y}, v) <= 1).length; if (n < bs) { bs = n; best = {x, y} }
+  });
+  return best;
+}
+
+// ---- one step of the computer's turn ----
+function aiAct(){
+  const s = G.sel;
+  if (G.pend) {   // Essence Transfer: take over the strongest enemy in reach, or let him fade
+    const e = (G.tg || []).filter(v => v.team != AI.side).sort((a, b) => b.hp - a.hp)[0];
+    return e ? cell(e.x, e.y) : essPass();
+  }
+  if (!s) {
+    let best = null;
+    live(AI.side).filter(u => !u.used && !u.st.stun).forEach(u => { const p = aiPlan(u); if (p && (!best || p.score > best.score)) best = p });
+    if (!best) return;
+    const u = G.u.find(v => v.id == best.id); AI.plan = best; AI.tgt = null; AI.steps = 0;
+    return cell(u.x, u.y);
+  }
+  if (++AI.steps > 25) return finish();   // safety net: never get stuck inside one activation
+  if (G.mode == 'move') {
+    const p = AI.plan;
+    if (p && p.id == s.id && (p.x != s.x || p.y != s.y) && G.reach.has(p.x + ',' + p.y)) return cell(p.x, p.y);
+    return stay();
+  }
+  if (G.mode == 'act') {
+    if (s.n >= 1) return finish();
+    const b = aiBest(s); AI.tgt = b.t || null;
+    if (b.kind == 'atk') return doAtk();
+    if (b.kind == 'ab') return doAb(b.key);
+    return finish();
+  }
+  if (G.mode == 'tg') {
+    const T = G.tg || [];
+    if (G.sq) {
+      const c = T.filter(t => !G.sq.includes(t));
+      if (G.sq.length < (G.sqKey == 'e_surge' ? 2 : 3) && c.length) { const t = aiPickTarget(s, c); return cell(t.x, t.y) }
+      return resolveStorm();
+    }
+    if (!T.length) return s.n >= 1 ? finish() : back();
+    const t = AI.tgt && T.includes(AI.tgt) ? AI.tgt : aiPickTarget(s, T); AI.tgt = null;
+    return cell(t.x, t.y);
+  }
+  if (G.mode == 'split') return resolveSplit(G.sp.n || s.d.a);
+  if (G.mode == 'quad') return resolveQuad(0);
+  if (G.mode == 'rev') { const v = fallen(s).sort((a, b) => b.d.a - a.d.a)[0]; return v ? resolveRevive(v.id) : back() }
+  if (G.mode == 'revspot') { const p = aiSafeSpot(null, s); return p ? cell(p.x, p.y) : back() }
+  if (G.mode == 'amove') {
+    const m = G.mv; if (!en(m).some(v => dist(m, v) <= 1)) return finish();
+    const p = aiSafeSpot(m, m); return p ? cell(p.x, p.y) : finish();
+  }
+  return finish();
+}
+function aiStep(){
+  AI.timer = null; if (!aiTurn()) return;
+  AI.acting = 1;
+  try { aiAct() } catch (e) { console.error('VS Computer:', e); try { if (G && G.sel) finish() } catch (_) {} }
+  finally { AI.acting = 0 }
+  aiTick();
+}
+function aiTick(){ if (aiTurn() && !AI.timer) AI.timer = setTimeout(aiStep, AI_DELAY) }
+
+// Block the player's clicks during the computer's turn (clicking a unit still shows its info),
+// and check after every screen update whether the computer should move.
+(function aiInit(){
+  INPUTS.forEach(n => {
+    const f = globalThis[n];
+    globalThis[n] = function(...a){
+      if (!aiOn() || AI.acting || AI.busy) return f.apply(this, a);
+      if (aiTurn()) { if (n == 'cell' && G) { G.insp = occ(a[0], a[1]) || null; render() } return }
+      AI.busy = 1;   // inputs triggered from inside a player's click (e.g. finish after an attack) must go through
+      try { return f.apply(this, a) } finally { AI.busy = 0 }
+    };
+  });
+  const r = globalThis.render;
+  globalThis.render = function(...a){ const v = r.apply(this, a); if (aiOn()) aiTick(); return v };
+})();

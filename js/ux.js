@@ -76,14 +76,16 @@ function uxAfterRender(){
   // turn / result alerts
   if (G) {
     if (UX.g !== G) { UX.g = G; UX.lastTurn = null; UX.lastWin = null }
-    const t = G.turn, w = G.win, mineTurn = typeof NET == 'undefined' || !NET || mine();
+    // duel = a human opponent online or the computer, so alerts speak from your side
+    const vsAI = typeof aiOn == 'function' && aiOn(), duel = NET || vsAI, meSide = NET ? NET.me : vsAI ? 1 - AI.side : null;
+    const t = G.turn, w = G.win, mineTurn = typeof NET == 'undefined' || mine();
     if (!UX.silent) {
-      if (UX.lastTurn === null) uxToast(NET ? (mineTurn ? 'Battle begins. You go first!' : 'Battle begins. Opponent goes first.') : `Battle begins. ${t ? 'Dark' : 'Light'} Side goes first.`);
-      else if (w != null && UX.lastWin == null) { const won = NET ? w == NET.me : true; uxToast(NET ? (won ? 'Victory!' : 'Defeat.') : `${w ? 'Dark' : 'Light'} Side wins!`, won ? 'win' : 'lose'); uxSound(won ? 'win' : 'lose') }
-      else if (w == null && t !== UX.lastTurn) { uxToast(NET ? (mineTurn ? 'Your turn!' : "Opponent's turn") : `${t ? 'Dark' : 'Light'} Side's turn`, mineTurn ? 'mine' : ''); if (mineTurn) uxSound('turn') }
+      if (UX.lastTurn === null) uxToast(duel ? (mineTurn ? 'Battle begins. You go first!' : 'Battle begins. Opponent goes first.') : `Battle begins. ${t ? 'Dark' : 'Light'} Side goes first.`);
+      else if (w != null && UX.lastWin == null) { const won = duel ? w == meSide : true; uxToast(duel ? (won ? 'Victory!' : 'Defeat.') : `${w ? 'Dark' : 'Light'} Side wins!`, won ? 'win' : 'lose'); uxSound(won ? 'win' : 'lose') }
+      else if (w == null && t !== UX.lastTurn) { uxToast(duel ? (mineTurn ? 'Your turn!' : "Opponent's turn") : `${t ? 'Dark' : 'Light'} Side's turn`, mineTurn ? 'mine' : ''); if (mineTurn) uxSound('turn') }
     }
     UX.lastTurn = t; UX.lastWin = w;
-    document.title = (G.win == null && NET && mineTurn ? '● Your turn · ' : '') + 'Force Battles';
+    document.title = (G.win == null && duel && mineTurn ? '● Your turn · ' : '') + 'Force Battles';
   } else { UX.g = null; UX.lastTurn = null; document.title = 'Force Battles' }
   UX.armed = null;
   const mark = () => { UX.seen = UX.last ? UX.last.id : 0 };

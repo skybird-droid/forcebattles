@@ -2,7 +2,8 @@
 // To announce a change, add a new entry at the TOP of this list. The newest entry
 // shows on the menu, and players who haven't seen it yet get a "NEW" badge.
 const UPDATES = [
-  {date:'Nov 1, 2026', title:'Character Overhaul', items:[
+  {date:'Nov 1, 2026', title:'VS Computer and Character Overhaul', items:[
+    'New VS Computer mode: pick a side and a squad, then battle a computer opponent with a random squad.',
     "Barriss Offee (Fallen) loses Saber Disarm; she keeps Betrayer's Guile and Healer's Touch.",
     "Automatic Epics (like Rey's All the Jedi and Ahsoka's Snips' Counter) now have gold borders.",
     'Board tiles show only portraits, Health and status. Hover a tile to see its name.',
