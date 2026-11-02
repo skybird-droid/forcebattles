@@ -216,6 +216,7 @@ function lobbyScreen(){
       <h3>Saved Squads</h3><p>Build a squad once, then load it in a click for local and online battles.</p>
       <button class="btn-secondary btn-wide" onclick="LOBBY.mode='squads';render()">Manage squads (${sqList().length}) <span aria-hidden="true">→</span></button>
     </section>
+    ${updatesPanel()}
     <p class="menu-footnote">SELECT YOUR CHARACTERS · PLAN YOUR MOVES · MASTER THE FORCE</p>`;
   } else if (LOBBY.phase == 'wait') {
     const ok = NET && NET.peer.open;

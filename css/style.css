@@ -15,7 +15,7 @@ button:disabled{opacity:.4;cursor:default}.row{display:flex;gap:12px;flex-wrap:w
 .abbar{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .ab{width:52px;height:52px;border-radius:8px;border:2px solid var(--ln);background:var(--card);padding:0;position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--fg);cursor:default}
 .ab img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.ab .gl{position:relative}
-.ab.atk{border-color:#c0392b}.ab.act{border-color:#2f7fd1}.ab.epic{border-color:#d4a017}.ab.pas{border-style:dashed;border-color:#8a8f98;cursor:help}
+.ab.atk{border-color:#c0392b}.ab.act{border-color:#2f7fd1}.ab.epic{border-color:#d4a017}.ab.pas{border-style:dashed;border-color:#8a8f98;cursor:help}.ab.pas.epic{border-color:#d4a017}
 .ab:not(.on):not(.pas){opacity:.45}.ab.on{cursor:pointer}.ab.on:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(0,0,0,.35)}
 .ab.pas::after{content:'P';position:absolute;right:2px;bottom:1px;font-size:9px;line-height:1;background:#8a8f98;color:#fff;border-radius:3px;padding:1px 3px}
 .ab.used::before{content:'\2715';position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;background:rgba(0,0,0,.55)}
@@ -122,3 +122,6 @@ input{min-height:46px;padding:10px 13px;border:1px solid var(--ln);border-radius
 /* Board tiles show only portrait + HP/status; names are in the hover tooltip and side panel */
 .c.U{display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
 .c.U small{margin-top:0;width:100%;background:#000a;border-radius:3px;padding:1px 0;text-shadow:none}
+.updates-panel{margin-top:18px;border-top:3px solid var(--gold)}.upd-new{margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--gold);color:#1a1405;letter-spacing:.08em}
+.upd-entry{margin:0 0 16px}.upd-head{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}.upd-head b{font-size:17px}.upd-head span{color:var(--muted);font-size:13px;font-weight:700}
+.upd-entry ul{margin:8px 0 0;padding-left:20px;color:var(--muted);font-size:15px;line-height:1.6}.upd-entry li{margin:2px 0}
