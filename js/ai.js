@@ -34,6 +34,17 @@ function aiAtkScore(u, t, n, desc){
   const h = aiHit(u, t, n);
   return h.ed + h.kill * aiWorth(t) + (/Stun/.test(desc || '') && !t.st.stun ? h.hit * 2 : 0);
 }
+// rough worth of support Epics that deal no damage themselves (before the save-your-Epic penalty)
+const aiReady = u => live(u.team).filter(v => v !== u && !v.used && !v.st.stun);
+const AI_EPV = {
+  e_shat: (u, t) => aiReady(u).filter(v => dist(v, t) <= 4).length * 1.5 + t.d.d,   // allies can still pile on
+  e_precog: (u, t) => t.used ? 0 : 1.5 + t.d.a,
+  e_sever: (u, t) => t.used ? .5 : 2 + t.d.a * .5 + (t.d.abs.some(a => a.type == 'Epic' && a.key && !epDone(t, a.key)) ? 1.5 : 0),
+  e_66: (u, t) => 1 + Math.max(0, ...al(t).filter(v => dist(t, v) <= 1).map(v => { const h = aiHit(t, v, t.d.a); return h.ed + h.kill * aiWorth(v) })),
+  e_barrier: (u, t) => [u, t].filter(v => en(v).some(e => dist(e, v) <= 2)).length * 2.2,
+  e_orb: u => 1 + en(u).filter(e => dist(e, u) <= 2).length * 1.5 + (u.hp <= u.d.h / 2 ? 2 : 0),
+  e_oneforce: u => live(u.team).reduce((x, v) => x + (v === u ? 0 : v.st.stun ? 2.5 : v.used ? 0 : 1.2), 0),
+};
 // best value and target of one Action/Epic ability, or null
 function aiAbValue(u, a, A, T){
   const key = a.key, desc = a.desc || '', dice = +((A.l.match(/(\d)d6/) || [])[1]) || 0, nd = t => dice || aDice(u, t);
@@ -46,6 +57,8 @@ function aiAbValue(u, a, A, T){
     const sc = foes.map(t => ({t, s:aiAtkScore(u, t, 3, desc)})).sort((x, y) => y.s - x.s), top = sc.slice(0, key == 'e_surge' ? 2 : 3);
     if (top.length) pick(top[0].t, top.reduce((x, y) => x + y.s, 0));
   }
+  else if (AI_EPV[key]) T.forEach(t => pick(t, AI_EPV[key](u, t)));
+  else if (key == 'e_ruin') T.forEach(t => pick(t, aiAtkScore(u, t, 4, desc) + live().filter(v => v !== t && v !== u && dist(v, t) <= 1).reduce((x, v) => x + (v.team == u.team ? -1.5 : 1), 0)));   // the blast also hits everyone next to the target
   else if (A.atk && A.inst) pick(u, T.reduce((x, t) => x + aiAtkScore(u, t, nd(t), desc), 0));
   else if (A.atk) T.forEach(t => pick(t, aiAtkScore(u, t, nd(t), desc) + .5));
   else T.forEach(t => {
@@ -72,7 +85,7 @@ function aiBest(u){
   if (en(u).some(v => k(v, 'manip') && dist(v, u) <= 1) || u.st.sever) return best;
   u.d.abs.forEach(a => {
     const A = a.key && AB[a.key];
-    if (!A || (a.type == 'Epic' && epDone(u, a.key)) || (u.st.nopatk && A.atk)) return;
+    if (!A || (a.type == 'Epic' && epDone(u, a.key)) || cdLeft(u, a.key) || (u.st.nopatk && A.atk)) return;
     let T = A.tg(u); if (A.atk) T = tf(u, T); if (!T.length) return;
     const v = aiAbValue(u, a, A, T);
     if (v && v.score > best.score) best = {kind:'ab', key:a.key, t:v.t, score:v.score};

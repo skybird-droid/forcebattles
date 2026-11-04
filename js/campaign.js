@@ -4,13 +4,27 @@
 // wrappers around render/hurt/die/stun, and only act while a campaign battle is running.
 // Levels 1-2 unlock a character's abilities: a unit's character data is copied with locked abilities removed.
 // Level 3 adds the campaign-only Portal Vet passive (+1 Attack die, +1 Defense die, +2 Health). The roster R is never modified.
-const CPKEY = 'fb-campaign', CP_XP = [0, 60, 160], CP_BOSS_NEED = 12;
-let CP = null;                                             // saved campaign
+const CP_XP = [0, 60, 160], CP_BOSS_NEED = 12, CP_LASTKEY = 'fb-campaign-side';
+// Each side is its own campaign with its own save, missions, echoes and final boss.
+const CP_SIDES = {
+  L:{key:'fb-campaign', name:'LIGHT SIDE', foe:'D', missions:() => CP_MISSIONS, boss:() => CP_BOSS, unit:() => CP_SON, echo:() => CP_ECHO,
+     who:'heroes', got:'rescued', Got:'Rescued', echoes:'Random Dark Side echoes', echoOf:'An echo of a Sith you defeated', bossWin:'Victory over the Dark Side.',
+     title:'Rescue the Jedi', blurb:'Begin with one random Light Side hero. Explore a new, randomized map each campaign, recruit up to {n} heroes, and confront the Son, the embodiment of the Dark Side.',
+     intro:'Every hero you rescue joins your roster.', roster:'Your rescued heroes.', final:'✦ The Son is defeated. The World Between Worlds is safe, for now. Your campaign continues: rescue every remaining hero.'},
+  D:{key:'fb-campaign-dark', name:'DARK SIDE', foe:'L', missions:() => CP_MISSIONS_D, boss:() => CP_BOSS_D, unit:() => CP_DAUGHTER, echo:() => CP_ECHO_D,
+     who:'warriors', got:'recruited', Got:'Recruited', echoes:'Random Light Side echoes', echoOf:'An echo of a Jedi you defeated', bossWin:'Victory over the Light Side.',
+     title:'Rise of the Sith', blurb:'Begin with one random Dark Side warrior. Explore a new, randomized map each campaign, recruit up to {n} Sith and Dark Side warriors, and confront the Daughter, the embodiment of the Light Side.',
+     intro:'Every warrior who wins a battle beside you joins your roster.', roster:'Your Dark Side warriors.', final:'✦ The Daughter is defeated. The World Between Worlds falls into shadow. Your campaign continues: recruit every remaining warrior.'},
+};
+let CPS = 'L';                                             // side being played
+const cpSide = () => CP_SIDES[CPS];
+let CP = null;                                             // saved campaign for that side
 let CPV = {view:'home', node:null, squad:[], confirm:0};   // campaign screen state
 let CPB = null;                                            // running campaign battle
-parseAbs(CP_SON);
+parseAbs(CP_SON); parseAbs(CP_DAUGHTER);
 
-function cpLoad(){ try { const s = JSON.parse(localStorage.getItem(CPKEY) || 'null'); CP = s && s.v == 1 ? s : null } catch (e) { CP = null } if (CP) { cpHideRemoved(); cpAddMissing() } }
+function cpPeek(side){ try { const s = JSON.parse(localStorage.getItem(CP_SIDES[side].key) || 'null'); return s && s.v == 1 ? s : null } catch (e) { return null } }
+function cpLoad(side = CPS){ CPS = side; CP = cpPeek(side); if (CP) { CP.side = side; cpHideRemoved(); cpAddMissing() } }
 // portals for hidden missions are cut off from older maps (node ids stay put, so progress is untouched)
 function cpHideRemoved(){
   CP.nodes.forEach(n => { if (n.t != 'mission' || !(cpMission(n.m) || {hidden:1}).hidden) return;
@@ -19,7 +33,7 @@ function cpHideRemoved(){
 // missions added after a campaign began get a portal in the largest gap of their tier's column
 function cpAddMissing(){
   const N = CP.nodes, have = new Set(N.map(n => n.m)), byY = (L, y) => L.slice().sort((a, b) => Math.abs(a.y - y) - Math.abs(b.y - y));
-  CP_MISSIONS.filter(m => !m.locked && !have.has(m.id)).forEach(m => {
+  cpSide().missions().filter(m => !m.locked && !have.has(m.id)).forEach(m => {
     const ci = Math.min(4, (m.tier - 1) * 2), col = N.filter(n => n.col === ci).sort((a, b) => a.y - b.y);
     const ys = [10, ...col.map(n => n.y), 590]; let y = 300, gap = 0;
     for (let i = 1; i < ys.length; i++) if (ys[i] - ys[i - 1] > gap) { gap = ys[i] - ys[i - 1]; y = Math.round((ys[i] + ys[i - 1]) / 2) }
@@ -30,13 +44,13 @@ function cpAddMissing(){
   });
   cpSave();
 }
-function cpSave(){ try { localStorage.setItem(CPKEY, JSON.stringify(CP)) } catch (e) {} }
+function cpSave(){ try { localStorage.setItem(cpSide().key, JSON.stringify(CP)); localStorage.setItem(CP_LASTKEY, CPS) } catch (e) {} }
 const cpRec = n => R.find(r => r.n == n);
-const cpMission = id => id == 'son' ? CP_BOSS : id == 'echo' ? CP_ECHO : CP_MISSIONS.find(m => m.id == id);
+const cpMission = id => { const S = cpSide(); return id == S.boss().id ? S.boss() : id == 'echo' ? S.echo() : S.missions().find(m => m.id == id) };
 const cpLevel = n => { const x = (CP.roster[n] || {}).xp || 0; return x >= CP_XP[2] ? 3 : x >= CP_XP[1] ? 2 : 1 };
 const cpShort = n => n.replace(/ \(.*\)/, '');
 const cpCleared = () => CP.nodes.filter(n => n.t == 'mission' && CP.done[n.id]).length;
-const cpRecruitable = () => new Set([...(CP ? [CP.start] : []), ...CP_MISSIONS.filter(m => !m.locked).flatMap(m => m.recruit)]).size;
+const cpRecruitable = (side = CPS, cp = CP) => new Set([...(cp ? [cp.start] : []), ...CP_SIDES[side].missions().filter(m => !m.locked && !m.hidden).flatMap(m => m.recruit)]).size;
 const cpLive = () => !!CPB && !!G && CPB.g === G;
 
 // ---- levels: a copy of the character data with only the unlocked abilities ----
@@ -59,18 +73,18 @@ function cpHero(n){
 
 // ---- map: columns of portals between the Gateway and the Son ----
 function cpNewMap(){
-  const order = CP_MISSIONS.filter(m => !m.locked).map(m => ({id:m.id, s:m.tier + Math.random() * 1.6})).sort((a, b) => a.s - b.s);
+  const order = cpSide().missions().filter(m => !m.locked && !m.hidden).map(m => ({id:m.id, s:m.tier + Math.random() * 1.6})).sort((a, b) => a.s - b.s);
   const C = [[], [], [], [], []], per = order.length / 5;
   order.forEach((o, i) => C[Math.min(4, Math.floor(i / per))].push({t:'mission', m:o.id}));
   C.forEach(c => c.push({t:'echo', m:'echo'}));
   C[1 + Math.floor(Math.random() * 3)].push({t:'echo', m:'echo'});
-  CP_MISSIONS.filter(m => m.locked && !m.hidden).forEach(m => C[4].push({t:'mission', m:m.id, locked:1}));
+  cpSide().missions().filter(m => m.locked && !m.hidden).forEach(m => C[4].push({t:'mission', m:m.id, locked:1}));
   const nodes = [{id:0, t:'start', x:70, y:300, l:[]}];
   C.forEach((c, ci) => {
     shuf(c); const gap = 520 / Math.max(1, c.length - 1);   // keep portals and their labels apart
     c.forEach((n, i) => nodes.push(Object.assign(n, {id:nodes.length, col:ci, x:200 + ci * 140 + Math.round(Math.random() * 30 - 15), y:Math.round(c.length == 1 ? 300 : 40 + i * gap + Math.random() * 10 - 5), l:[]})));
   });
-  const boss = {id:nodes.length, t:'boss', m:'son', x:930, y:300, l:[]}; nodes.push(boss);
+  const boss = {id:nodes.length, t:'boss', m:cpSide().boss().id, x:930, y:300, l:[]}; nodes.push(boss);
   const link = (a, b) => { if (a !== b && !a.l.includes(b.id)) { a.l.push(b.id); b.l.push(a.id) } };
   const col = i => nodes.filter(n => n.col === i), byY = (L, y) => L.slice().sort((a, b) => Math.abs(a.y - y) - Math.abs(b.y - y));
   byY(col(0), 300).slice(0, 3).forEach(n => link(nodes[0], n));
@@ -103,12 +117,15 @@ function cpStatus(){
 }
 
 // ---- starting, opening and leaving ----
-function cpOpen(){ cpLoad(); LOBBY.mode = 'camp'; CPV = {view:CP ? 'map' : 'home', node:null, squad:[], confirm:0}; render() }
+// opens on the side played last; the campaign menu lets you switch sides
+function cpOpen(){ let s = 'L'; try { s = localStorage.getItem(CP_LASTKEY) == 'D' ? 'D' : 'L' } catch (e) {} cpLoad(s); LOBBY.mode = 'camp'; CPV = {view:CP ? 'map' : 'home', node:null, squad:[], confirm:0}; render() }
 function cpHome(){ CPV.view = 'home'; CPV.confirm = 0; render() }
-function cpNew(){
-  if (CP && !CPV.confirm) { CPV.confirm = 1; render(); return }
-  const L = R.filter(r => r.s == 'L'), s = L[Math.floor(Math.random() * L.length)];
-  CP = {v:1, side:'L', start:s.n, roster:{[s.n]:{xp:0}}, order:[s.n], nodes:cpNewMap(), done:{}, best:{}, beaten:[], won:0, last:null, squad:[]};
+function cpContinue(side){ cpLoad(side); cpSave(); CPV.confirm = 0; cpView(CP ? 'map' : 'home') }
+function cpNew(side = CPS){
+  if (cpPeek(side) && CPV.confirm !== side) { CPV.confirm = side; render(); return }
+  CPS = side;
+  const L = R.filter(r => r.s == side), s = L[Math.floor(Math.random() * L.length)];
+  CP = {v:1, side, start:s.n, roster:{[s.n]:{xp:0}}, order:[s.n], nodes:cpNewMap(), done:{}, best:{}, beaten:[], won:0, last:null, squad:[]};
   cpSave(); CPV = {view:'intro', node:null, squad:[], confirm:0}; render();
 }
 function cpView(v){ CPV.view = v; if (v != 'map') CPV.node = null; render() }
@@ -128,18 +145,23 @@ function cpToggle(k){
 
 // ---- building a battle ----
 function cpWaves(m){
-  const dark = R.filter(r => r.s == 'D' && r.cost == 1).map(r => r.n), pool = CP.beaten.filter(n => dark.includes(n));
-  const pickEcho = used => { const src = pool.filter(n => !used.includes(n)); const L = src.length ? src : dark.filter(n => !used.includes(n)); return L[Math.floor(Math.random() * L.length)] };
+  const foes = R.filter(r => r.s == cpSide().foe && r.cost == 1).map(r => r.n), pool = CP.beaten.filter(n => foes.includes(n));
+  const pick = (L, used) => { L = L.filter(n => !used.includes(n)); return L[Math.floor(Math.random() * L.length)] };
+  const pickEcho = used => pick(pool.some(n => !used.includes(n)) ? pool : foes, used);
   if (m.id == 'echo') { const used = []; for (let i = 0; i < 1 + Math.min(2, Math.floor(cpCleared() / 5)); i++) used.push(pickEcho(used)); return [used.map(n => ({n}))] }
-  const used = [];
-  return m.waves.map(w => w.map(s => s.echo ? (used.push(pickEcho(used)), {n:used[used.length - 1], as:'an echo'}) : s));
+  const used = m.waves.flat().filter(s => s.n).map(s => s.n);
+  return m.waves.map(w => w.map(s => {
+    if (s.echo) { const n = pickEcho(used); used.push(n); return {n, as:'an echo'} }
+    if (s.from) { const n = pick(s.from, used) || pick(s.from, []); used.push(n); return Object.assign({}, s, {n, as:s.as || `a random ${s.label || 'foe'}`}) }
+    return s;
+  }));
 }
 // at least one of your own heroes must go, unless every hero you own is already fighting as a guest
 function cpCanGo(m, guests){
   const free = CP.order.filter(n => !guests.includes(n)).length, n = CPV.squad.length;
   return n >= Math.min(m.minSquad || 1, free, m.slots) &&(n > 0 || (guests.length > 0 && !m.minSquad)) && n <= m.slots;
 }
-function cpUnitData(s){ let d = s.son ? CP_SON : cpRec(s.n); if (s.lvl != null || s.skip) d = cpData(d, s.lvl ?? 3, s.skip); return s.hp ? Object.assign({}, d, {h:s.hp}) : d }
+function cpUnitData(s){ let d = s.son || s.boss ? cpSide().unit() : cpRec(s.n); if (s.lvl != null || s.skip) d = cpData(d, s.lvl ?? 3, s.skip); return s.hp ? Object.assign({}, d, {h:s.hp}) : d }
 function cpFree(rows){ const a = []; rows.forEach(y => { for (let x = 0; x < 8; x++) if (!occ(x, y)) a.push([x, y]) }); return shuf(a) }
 function cpAdd(d, team, c, lvl){
   const u = {d, team, x:c[0], y:c[1], hp:d.h, st:{}, used:0, ep:0, id:G.u.length, cp:{lvl}}, r = CPB.m.rules || {};
@@ -152,15 +174,23 @@ function cpSpawn(i){
   const spots = cpFree([0, 1]).concat(cpFree([2, 3]));
   CPB.waves[i].forEach(s => { const u = cpAdd(cpUnitData(s), 1, spots.shift()); if (s.as) log(`🌀 ${u.d.n} appears (${s.as})`) });
 }
+// rules.arrive: an enemy joins mid-battle, at its round or as soon as the rest of the enemy side is down
+function cpArrive(early){
+  const due = CPB.arrive.filter(a => early || a.round <= CPB.round); if (!due.length) return 0;
+  CPB.arrive = CPB.arrive.filter(a => !due.includes(a));
+  const spots = cpFree([0, 1]).concat(cpFree([2, 3]));
+  due.forEach(a => { log((early && a.early) || a.text || `🌀 ${a.n} arrives!`); cpAdd(cpUnitData(a), 1, spots.shift()); CPB.waves[CPB.wave].push(a) });
+  enforcerTaunt(); return 1;
+}
 function cpStart(){
   const node = CP.nodes[CPV.node], m = cpMission(node.m), guests = (m.guests || m.recruit || []).filter(n => cpRec(n));
   if (!cpCanGo(m, guests)) return;
   CP.squad = CPV.squad.slice(); cpSave();
   prng = Math.random;
   G = {u:[], dead:[], log:[], turn:0, round:1, sel:null, mode:null, win:null, ben:[0, 0]};
-  CPB = {g:G, m, node, squad:CPV.squad.slice(), waves:cpWaves(m), wave:0, round:0, deaths:[], stun:0, hazHit:0, haz:[], caps:[], freed:0, waveRound:[], done:0, why:'', busy:0, rq:0};
+  CPB = {g:G, m, node, squad:CPV.squad.slice(), waves:cpWaves(m), wave:0, round:0, deaths:[], stun:0, hazHit:0, haz:[], caps:[], freed:0, waveRound:[], done:0, why:'', busy:0, rq:0, arrive:((m.rules || {}).arrive || []).slice(), drained:0};
   const home = cpFree([7, 6]);
-  guests.forEach(n => cpAdd(cpRec(n), 0, home.shift(), 3));
+  guests.forEach(n => { const d = cpRec(n), h = (m.guestHp || {})[n]; cpAdd(h ? Object.assign({}, d, {h}) : d, 0, home.shift(), 3) });
   CPB.squad.forEach(n => cpAdd(cpHero(n), 0, home.shift(), cpLevel(n)));
   cpSpawn(0);
   AI = {side:1, timer:null, acting:0, busy:0, plan:null, tgt:null, steps:0};
@@ -180,9 +210,10 @@ function cpRoundStart(){
     CPB.haz = []; CPB.haz = cpCells(r.hazard.n, [2, 3, 4, 5]);
   }
   if (r.captives) {
-    if (n == 1) { CPB.caps = cpCells(r.captives.n, [2, 3, 4]); log(`⛓ ${r.captives.n} captive Jedi are held near ${r.captives.by}. Move next to them to free them`) }
-    else { const by = live(1).find(v => v.d.n == r.captives.by); if (by && CPB.caps.length) { CPB.caps.splice(Math.floor(Math.random() * CPB.caps.length), 1); heal(by, r.captives.heal); log(`🩸 ${by.d.n} drains the life of a captive Jedi (+${r.captives.heal} Health)`) } }
+    if (n == 1) { CPB.caps = cpCells(r.captives.n, [2, 3, 4]); log(r.captives.text || `⛓ ${r.captives.n} captive Jedi are held near ${r.captives.by}. Move next to them to free them`) }
+    else { const by = live().find(v => v.d.n == r.captives.by); if (by && CPB.caps.length) { CPB.caps.splice(Math.floor(Math.random() * CPB.caps.length), 1); CPB.drained++; heal(by, r.captives.heal); log(`🩸 ${by.d.n} drains the life of a captive Jedi (+${r.captives.heal} Health)`) } }
   }
+  if (CPB.arrive.length) cpArrive(false);
   (r.events || []).filter(e => e.round == n).forEach(e => {
     if (e.hurt) { const u = live().find(v => v.d.n == e.hurt.n); if (u) { log(e.text); hurt(u, e.hurt.dmg); if (!u.dead && e.hurt.stun) stun(u) } }
     if (e.pod) {
@@ -196,9 +227,10 @@ function cpCheck(){
   if (!cpLive() || CPB.busy) return; CPB.busy = 1;
   try {
     while (G.win == null && CPB.round < G.round) { CPB.round++; cpRoundStart() }
-    if (CPB.caps.length) CPB.caps = CPB.caps.filter(c => { const u = live(0).find(v => dist(v, {x:c[0], y:c[1]}) <= 1); if (u) { CPB.freed++; log(`🔓 ${u.d.n} frees a captive Jedi`) } return !u });
+    if (CPB.caps.length) CPB.caps = CPB.caps.filter(c => { const u = live(((CPB.m.rules || {}).captives || {}).free || 0).find(v => dist(v, {x:c[0], y:c[1]}) <= 1); if (u) { CPB.freed++; log(`🔓 ${u.d.n} frees a captive Jedi`) } return !u });
     if (G.win == null) { const f = G.u.find(u => u.team == 0 && u.dead && (CPB.m.protect || []).includes(u.d.n)); if (f) { G.win = 1; CPB.why = `${f.d.n} has fallen.` } }
     if (G.win == null && G.u.some(u => u.cp.proj) && !live(0).some(u => !u.cp.proj)) { G.win = 1; CPB.why = 'The rest of your squad has fallen.' }
+    if (G.win === 0 && CPB.arrive.length) { G.win = null; G.pend = null; cpArrive(true); if (G.sel) finish(); else if (!avail(G.turn)) nextTurn() }
     if (G.win === 0 && CPB.wave < CPB.waves.length - 1) {
       CPB.waveRound[CPB.wave] = G.round; CPB.wave++; G.win = null; G.pend = null;
       const t = ((CPB.m.rules || {}).waveText || [])[CPB.wave]; log(t || `🌀 Phase ${CPB.wave + 1} of ${CPB.waves.length}: new enemies emerge from the portal!`);
@@ -209,7 +241,7 @@ function cpCheck(){
     if (G.win != null && !CPB.done) { CPB.done = 1; if (G.win === 0) CPB.waveRound[CPB.wave] = G.round; cpResult() }
   } finally { CPB.busy = 0 }
 }
-function cpMark(u){ if (!cpLive() || u.cpM) return; u.cpM = 1; CPB.deaths.push({n:u.d.n, team:u.team, by:G.sel && G.sel.d.n, wave:CPB.wave}) }
+function cpMark(u){ if (!cpLive() || u.cpM) return; u.cpM = 1; CPB.deaths.push({n:u.d.n, team:u.team, by:G.sel && G.sel.d.n, wave:CPB.wave, round:G.round}) }
 function cpOpt(c){
   const mine = n => G.u.find(u => u.team == 0 && u.d.n == n), foe = n => G.u.find(u => u.team == 1 && u.d.n == n);
   if (c.rounds) return G.round <= c.rounds;
@@ -221,6 +253,8 @@ function cpOpt(c){
   if (c.noHazard) return !CPB.hazHit;
   if (c.hpBelow) { const u = foe(c.hpBelow.n); return !!u && u.hp < u.d.h * c.hpBelow.frac }
   if (c.hpAbove) { const u = mine(c.hpAbove.n); return !!u && !u.dead && u.hp > u.d.h * c.hpAbove.frac }
+  if (c.killBy) return CPB.deaths.some(d => d.team == 1 && d.n == c.killBy.n && d.round <= c.killBy.round);
+  if (c.drained) return CPB.drained >= ((CPB.m.rules || {}).captives || {}).n;
   if (c.waveBy) return CPB.waveRound[c.waveBy.wave] != null && CPB.waveRound[c.waveBy.wave] <= c.waveBy.round;
   return false;
 }
@@ -233,7 +267,7 @@ function cpResult(){
     CP.done[node.id] = 1;
     const prev = CP.best[m.id] || []; CP.best[m.id] = res.opts.map((o, i) => o.ok || !!prev[i]);
     CPB.waves.flat().forEach(s => { if (s.n && !CP.beaten.includes(s.n)) CP.beaten.push(s.n) });
-    if (m.id == 'son') { CP.won = 1; res.final = 1 }
+    if (m === cpSide().boss()) { CP.won = 1; res.final = 1 }
   } else { res.xp = 20; if (!res.why) res.why = 'Your squad has fallen.' }
   CPB.squad.forEach(n => { const b = cpLevel(n); CP.roster[n].xp += res.xp; const a = cpLevel(n); if (a > b) res.lv.push({n, lv:a}) });
   CP.last = res; cpSave();
@@ -259,26 +293,31 @@ function cpDecorate(){
   const mark = (L, cls, tip) => L.forEach(([x, y]) => { const c = document.querySelector(`.board [data-x="${x}"][data-y="${y}"]`); if (c) { c.classList.add(cls); if (!occ(x, y)) c.title = tip } });
   const r = CPB.m.rules || {};
   if (r.hazard) mark(CPB.haz, 'cp-haz', `${r.hazard.label}: ${r.hazard.dmg} damage at the start of the next round`);
-  mark(CPB.caps, 'cp-cap', 'Captive Jedi: move next to them to free them');
+  mark(CPB.caps, 'cp-cap', (r.captives || {}).free ? `Captive Jedi: ${r.captives.by} drains one each round` : 'Captive Jedi: move next to them to free them');
 }
 
 // ---- screens ----
-const cpPortrait = (n, cls = '') => { const r = n == 'The Son' ? CP_SON : cpRec(n); return `<span class="cp-face ${cls}" style="background-image:${r && r.img ? `url('${r.img}')` : 'none'}"></span>` };
+const cpPortrait = (n, cls = '') => { const r = n == CP_SON.n ? CP_SON : n == CP_DAUGHTER.n ? CP_DAUGHTER : cpRec(n); return `<span class="cp-face ${cls}" style="background-image:${r && r.img ? `url('${r.img}')` : 'none'}"></span>` };
 function cpAbList(n, lvl){
   return cpAbs(n).map((a, i) => `<li class="${i < lvl ? '' : 'cp-lock'}"><b>${esc(a.name)}</b> <i>${a.type}</i>${i < lvl ? '' : ` · 🔒 Level ${i + 1}`}<br><span>${esc(a.desc)}</span></li>`).join('');
 }
 function cpHeader(sub){
-  return `<div class="cp-head"><div><div class="panel-eyebrow">SINGLE PLAYER · LIGHT SIDE</div><h2>World Between Worlds</h2>${sub ? `<p>${sub}</p>` : ''}</div><div class="cp-head-btns">${CP && CPV.view != 'map' && CPV.view != 'home' ? `<button onclick="cpView('map')">🗺 Map</button>` : ''}${CP && CPV.view != 'roster' && CPV.view != 'home' ? `<button onclick="cpView('roster')">★ Roster (${CP.order.length})</button>` : ''}${CPV.view != 'home' ? '<button onclick="cpHome()">Campaign menu</button>' : ''}<button onclick="LOBBY.mode='menu';render()">← Main menu</button></div></div>`;
+  const side = CPV.view != 'home' && CP ? ` · ${cpSide().name}` : '';
+  return `<div class="cp-head"><div><div class="panel-eyebrow">SINGLE PLAYER${side}</div><h2>World Between Worlds</h2>${sub ? `<p>${sub}</p>` : ''}</div><div class="cp-head-btns">${CP && CPV.view != 'map' && CPV.view != 'home' ? `<button onclick="cpView('map')">🗺 Map</button>` : ''}${CP && CPV.view != 'roster' && CPV.view != 'home' ? `<button onclick="cpView('roster')">★ Roster (${CP.order.length})</button>` : ''}${CPV.view != 'home' ? '<button onclick="cpHome()">Campaign menu</button>' : ''}<button onclick="LOBBY.mode='menu';render()">← Main menu</button></div></div>`;
+}
+function cpPathCard(side){
+  const S = CP_SIDES[side], c = cpPeek(side), boss = S.boss().title, cleared = c ? c.nodes.filter(n => n.t == 'mission' && c.done[n.id]).length : 0;
+  const name = side == 'L' ? 'Light Side' : 'Dark Side';
+  return `<div class="menu-panel cp-path ${side}"><div class="panel-eyebrow">${S.name} CAMPAIGN</div><h3>${S.title}</h3><p>${S.blurb.replace('{n}', cpRecruitable(side, c))}</p>
+      ${c ? `<button class="btn-primary btn-wide" onclick="cpContinue('${side}')">Continue campaign <span aria-hidden="true">→</span></button><div class="cp-progress">${c.order.length} ${c.order.length == 1 ? S.who.slice(0, -(S.who == 'heroes' ? 2 : 1)) : S.who} ${S.got} · ${cleared} portals cleared${c.won ? ` · ${boss} defeated ✦` : ''}</div><button class="btn-ghost btn-wide" onclick="cpNew('${side}')">${CPV.confirm === side ? 'Click again: this erases your current campaign' : 'Start a new campaign'}</button>` : `<button class="btn-primary btn-wide" onclick="cpNew('${side}')">Begin the ${name} campaign <span aria-hidden="true">→</span></button>`}</div>`;
 }
 function cpHomeHtml(){
-  return cpHeader('A mysterious realm connecting every point in time and space. Travel its paths, relive famous duels, and rescue the heroes of the Light.') +
-    `<div class="cp-paths"><div class="menu-panel cp-path L"><div class="panel-eyebrow">LIGHT SIDE CAMPAIGN</div><h3>Rescue the Jedi</h3><p>Begin with one random Light Side hero. Explore a new, randomized map each campaign, recruit up to ${cpRecruitable()} heroes, and confront the Son, the embodiment of the Dark Side.</p>
-      ${CP ? `<button class="btn-primary btn-wide" onclick="cpView('map')">Continue campaign <span aria-hidden="true">→</span></button><div class="cp-progress">${CP.order.length} heroes rescued · ${cpCleared()} portals cleared${CP.won ? ' · The Son defeated ✦' : ''}</div><button class="btn-ghost btn-wide" onclick="cpNew()">${CPV.confirm ? 'Click again: this erases your current campaign' : 'Start a new campaign'}</button>` : '<button class="btn-primary btn-wide" onclick="cpNew()">Begin the Light Side campaign <span aria-hidden="true">→</span></button>'}</div>
-      <div class="menu-panel cp-path D cp-soon"><div class="panel-eyebrow">DARK SIDE CAMPAIGN</div><h3>Coming later</h3><p>A separate path with its own missions and its own final confrontation with the Daughter.</p><button class="btn-secondary btn-wide" disabled>Not available yet</button></div></div>`;
+  return cpHeader('A mysterious realm connecting every point in time and space. Travel its paths, relive famous duels, and choose a side: rescue the heroes of the Light, or gather the servants of the Dark.') +
+    `<div class="cp-paths">${cpPathCard('L')}${cpPathCard('D')}</div>`;
 }
 function cpIntroHtml(){
   const n = CP.start;
-  return cpHeader() + `<div class="menu-panel cp-intro">${cpPortrait(n, 'big')}<div><div class="panel-eyebrow">YOUR JOURNEY BEGINS</div><h3>${esc(n)} answers the call</h3><p>A portal opens in the World Between Worlds, and ${esc(cpShort(n))} steps through. Every hero you rescue joins your roster. Missions give experience that unlocks more of each character's abilities, up to Level 3.</p><ul class="cp-abs">${cpAbList(n, 1)}</ul><button class="btn-primary" onclick="cpView('map')">Enter the World Between Worlds <span aria-hidden="true">→</span></button></div></div>`;
+  return cpHeader() + `<div class="menu-panel cp-intro">${cpPortrait(n, 'big')}<div><div class="panel-eyebrow">YOUR JOURNEY BEGINS</div><h3>${esc(n)} answers the call</h3><p>A portal opens in the World Between Worlds, and ${esc(cpShort(n))} steps through. ${cpSide().intro} Missions give experience that unlocks more of each character's abilities, up to Level 3.</p><ul class="cp-abs">${cpAbList(n, 1)}</ul><button class="btn-primary" onclick="cpView('map')">Enter the World Between Worlds <span aria-hidden="true">→</span></button></div></div>`;
 }
 function cpMapHtml(){
   const st = cpStatus(), N = CP.nodes, vis = n => st[n.id] != 'hidden';
@@ -287,8 +326,8 @@ function cpMapHtml(){
   N.forEach(n => {
     const s = st[n.id]; if (s == 'hidden') return;
     const m = n.m && cpMission(n.m), sel = CPV.node === n.id, rr = n.t == 'boss' ? 40 : n.t == 'start' ? 30 : 24;
-    const face = n.t == 'start' ? cpRec(CP.start).img : n.t == 'boss' ? CP_SON_IMG : n.t == 'mission' && s != 'seen' ? (cpRec(m.recruit[0]) || {}).img : null;
-    const label = n.t == 'start' ? 'Gateway' : s == 'seen' ? '???' : n.t == 'boss' ? 'The Son' : n.t == 'echo' ? 'Echoes' : cpShort(m.recruit[0]) + (m.recruit.length > 1 ? ` +${m.recruit.length - 1}` : '');
+    const face = n.t == 'start' ? cpRec(CP.start).img : n.t == 'boss' ? cpSide().unit().img : n.t == 'mission' && s != 'seen' ? (cpRec(m.recruit[0]) || {}).img : null;
+    const label = n.t == 'start' ? 'Gateway' : s == 'seen' ? '???' : n.t == 'boss' ? cpSide().unit().n : n.t == 'echo' ? 'Echoes' : cpShort(m.recruit[0]) + (m.recruit.length > 1 ? ` +${m.recruit.length - 1}` : '');
     const click = ['open', 'done', 'locked', 'sealed'].includes(s) && n.t != 'start';
     svg += `<g class="cp-node ${s} ${n.t}${sel ? ' sel' : ''}" transform="translate(${n.x},${n.y})"${click ? ` tabindex="0" role="button" aria-label="${esc(label)}" onclick="cpPick(${n.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cpPick(${n.id})}"` : ''}>
       ${s == 'open' ? `<circle class="cp-halo" r="${rr + 16}" fill="url(#cpglow)"/>` : ''}<circle class="cp-ring" r="${rr + 4}"/>
@@ -298,29 +337,34 @@ function cpMapHtml(){
   });
   svg += '</svg>';
   const need = Math.max(0, CP_BOSS_NEED - cpCleared());
-  return cpHeader() + `<div class="cp-stats"><span><b>${CP.order.length}</b> / ${cpRecruitable()} heroes rescued</span><span><b>${cpCleared()}</b> portals cleared</span><span>${CP.won ? '✦ The Son has been defeated' : need ? `The Son's portal opens after <b>${need}</b> more ${need == 1 ? 'portal' : 'portals'}` : "<b>The Son's portal is open</b> (reach it on the map)"}</span></div>
+  const S = cpSide(), B = S.unit().n;
+  return cpHeader() + `<div class="cp-stats"><span><b>${CP.order.length}</b> / ${cpRecruitable()} ${S.who} ${S.got}</span><span><b>${cpCleared()}</b> portals cleared</span><span>${CP.won ? `✦ ${B} has been defeated` : need ? `${B}'s portal opens after <b>${need}</b> more ${need == 1 ? 'portal' : 'portals'}` : `<b>${B}'s portal is open</b> (reach it on the map)`}</span></div>
     <div class="cp-map">${svg}</div><div class="cp-legend"><span><i class="lg open"></i>Open portal</span><span><i class="lg done"></i>Cleared (replay for experience)</span><span><i class="lg seen"></i>Unknown portal</span><span><i class="lg locked"></i>Sealed</span></div>` + (CPV.node != null ? cpBriefHtml() : '<p class="cp-hint">Select a glowing portal to see its mission.</p>');
 }
 function cpBriefHtml(){
   const node = CP.nodes[CPV.node], m = cpMission(node.m), st = cpStatus()[node.id], best = CP.best[m.id] || [];
   const guests = (m.guests || m.recruit || []).filter(n => cpRec(n)), blocked = st == 'locked' || st == 'sealed';
-  const enemies = node.t == 'echo' ? '<div class="cp-chip">Random Dark Side echoes</div>' : node.t == 'boss' ? `<div class="cp-wave"><span class="cp-wave-n">Phase 1</span><div class="cp-chip">${cpPortrait('The Son')}The Son <small>♥12</small></div><div class="cp-chip">An echo of a Sith you defeated</div></div><div class="cp-wave"><span class="cp-wave-n">Phase 2</span><div class="cp-chip">${cpPortrait('The Son')}The Son, unbound <small>♥20</small></div></div>` :
-    m.waves.map((w, i) => `<div class="cp-wave">${m.waves.length > 1 ? `<span class="cp-wave-n">Phase ${i + 1}</span>` : ''}${w.map(s => `<div class="cp-chip">${cpPortrait(s.n)}${esc(cpShort(s.n))}${s.hp ? ` <small>♥${s.hp}</small>` : ''}</div>`).join('')}</div>`).join('');
-  const reward = node.t == 'echo' ? 'Experience for your squad.' : node.t == 'boss' ? 'Victory over the Dark Side.' : m.recruit.map(n => CP.roster[n] ? `${esc(cpShort(n))} (already in your roster)` : `<b>${esc(n)}</b> joins your roster`).join(', ');
+  const S = cpSide(), B = S.unit(), hp = s => s.hp ? ` <small>♥${s.hp}</small>` : '';
+  const chip = s => s.son || s.boss ? `<div class="cp-chip">${cpPortrait(B.n)}${esc(s.label || B.n)}${hp(s)}</div>` : s.echo ? `<div class="cp-chip">${S.echoOf}</div>` :
+    s.from ? `<div class="cp-chip">A random ${esc(s.label || 'foe')}${hp(s)}</div>` : `<div class="cp-chip">${cpPortrait(s.n)}${esc(cpShort(s.n))}${hp(s)}</div>`;
+  const later = ((m.rules || {}).arrive || []).map(a => `<div class="cp-chip">${cpPortrait(a.n)}${esc(cpShort(a.n))}${hp(a)} <small>from Round ${a.round}</small></div>`).join('');
+  const enemies = node.t == 'echo' ? `<div class="cp-chip">${S.echoes}</div>` :
+    m.waves.map((w, i) => `<div class="cp-wave">${m.waves.length > 1 ? `<span class="cp-wave-n">Phase ${i + 1}</span>` : ''}${w.map(chip).join('')}${i == 0 ? later : ''}</div>`).join('');
+  const reward = node.t == 'echo' ? 'Experience for your squad.' : node.t == 'boss' ? S.bossWin : m.recruit.map(n => CP.roster[n] ? `${esc(cpShort(n))} (already in your roster)` : `<b>${esc(n)}</b> joins your roster`).join(', ');
   const roster = CP.order.filter(n => !guests.includes(n)), full = CPV.squad.length >= m.slots;
   const canGo = !blocked && cpCanGo(m, guests);
   return `<section class="menu-panel cp-brief" id="cp-brief"><div class="cp-brief-top"><div><div class="panel-eyebrow">${esc(m.lore)}</div><h3>${esc(m.title)}</h3></div><button class="btn-ghost" onclick="CPV.node=null;render()">Close</button></div>
     <p>${esc(m.premise)}</p>
-    ${m.locked ? `<div class="card cp-sealed">🔒 ${esc(m.locked)}</div>` : st == 'sealed' ? `<div class="card cp-sealed">🔒 Clear ${CP_BOSS_NEED - cpCleared()} more portals to open the way to the Son.</div>` : ''}
+    ${m.locked ? `<div class="card cp-sealed">🔒 ${esc(m.locked)}</div>` : st == 'sealed' ? `<div class="card cp-sealed">🔒 Clear ${CP_BOSS_NEED - cpCleared()} more portals to open the way to ${B.n.replace(/^The /, 'the ')}.</div>` : ''}
     <div class="cp-cols"><div><h4>Main objective</h4><p class="cp-main">${esc(m.main)}</p>${(m.opts || []).length ? `<h4>Optional objectives <small>(+25 XP each)</small></h4><ul class="cp-opts">${m.opts.map((o, i) => `<li class="${best[i] ? 'got' : ''}">${best[i] ? '✓' : '○'} ${esc(o.t)}</li>`).join('')}</ul>` : ''}
       ${(m.special || []).length ? `<h4>Special rules</h4><ul class="cp-rules">${m.special.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}<h4>Reward</h4><p>${reward}${CP.done[node.id] ? ' · Replay for experience.' : ''}</p></div>
       <div><h4>Enemies</h4>${enemies || '<p>None</p>'}${guests.length ? `<h4>Fighting alongside you</h4><div class="cp-wave">${guests.map(n => `<div class="cp-chip">${cpPortrait(n)}${esc(cpShort(n))}</div>`).join('')}</div>` : ''}</div></div>
     ${blocked ? '' : !m.slots ? `<h4>Your squad</h4><p>${esc(guests.map(cpShort).join(' and '))} must face this alone.</p>
-    <button class="btn-primary btn-wide" ${canGo ? '' : 'disabled'} onclick="cpStart()">Enter the portal</button>` : `<h4>Your squad <small>(choose up to ${m.slots}${m.minSquad ? `, at least ${m.minSquad}` : ''})</small></h4><div class="cp-squad">${roster.map(n => { const on = CPV.squad.includes(n), lv = cpLevel(n); return `<button class="cp-pick${on ? ' on' : ''}" ${!on && full ? 'disabled' : ''} aria-pressed="${on}" onclick="cpToggle(${CP.order.indexOf(n)})">${cpPortrait(n)}<span><b>${esc(cpShort(n))}</b><small>Level ${lv} · ${Math.min(lv, cpAbs(n).length)}/${cpAbs(n).length} abilities</small></span></button>` }).join('') || '<p>Every hero you own is already fighting in this mission.</p>'}</div>
+    <button class="btn-primary btn-wide" ${canGo ? '' : 'disabled'} onclick="cpStart()">Enter the portal</button>` : `<h4>Your squad <small>(choose up to ${m.slots}${m.minSquad ? `, at least ${m.minSquad}` : ''})</small></h4><div class="cp-squad">${roster.map(n => { const on = CPV.squad.includes(n), lv = cpLevel(n); return `<button class="cp-pick${on ? ' on' : ''}" ${!on && full ? 'disabled' : ''} aria-pressed="${on}" onclick="cpToggle(${CP.order.indexOf(n)})">${cpPortrait(n)}<span><b>${esc(cpShort(n))}</b><small>Level ${lv} · ${Math.min(lv, cpAbs(n).length)}/${cpAbs(n).length} abilities</small></span></button>` }).join('') || `<p>Every one of your ${S.who} is already fighting in this mission.</p>`}</div>
     <button class="btn-primary btn-wide" ${canGo ? '' : 'disabled'} onclick="cpStart()">Enter the portal · ${CPV.squad.length}/${m.slots}</button>`}</section>`;
 }
 function cpRosterHtml(){
-  return cpHeader('Your rescued heroes. Experience unlocks abilities, and Level 3 makes a hero a Portal Vet.') + `<div class="cp-roster">${CP.order.map(n => {
+  return cpHeader(`${cpSide().roster} Experience unlocks abilities, and Level 3 makes a character a Portal Vet.`) + `<div class="cp-roster">${CP.order.map(n => {
     const r = cpRec(n), xp = CP.roster[n].xp, lv = cpLevel(n), next = CP_XP[lv], pct = lv >= 3 ? 100 : Math.round((xp - CP_XP[lv - 1]) / (next - CP_XP[lv - 1]) * 100);
     return `<div class="menu-panel cp-hero"><div class="cp-hero-top">${cpPortrait(n, 'mid')}<div><b>${esc(n)}</b><div class="pick-stats">${(s => `♥ ${s.h} HP · ⚔ ${s.a}d6 · 🛡 ${s.d}d6`)(cpHero(n))}</div><div class="cp-lv">Level ${lv}${lv < 3 ? ` · ${xp}/${next} XP` : ' · Max level'}</div><div class="cp-bar"><i style="width:${pct}%"></i></div></div></div><ul class="cp-abs">${cpAbList(n, lv)}</ul></div>`;
   }).join('')}</div>`;
@@ -330,8 +374,8 @@ function cpResultHtml(){
   if (!r) { CPV.view = 'map'; return cpMapHtml() }
   return cpHeader() + `<section class="menu-panel cp-result ${r.win ? 'win' : 'lose'}"><div class="panel-eyebrow">${r.win ? 'MISSION COMPLETE' : 'MISSION FAILED'}</div><h3>${esc(r.title)}</h3>
     <p>${esc(r.win ? r.outro : r.why + ' The portal flickers. You can try again.')}</p>
-    ${r.final ? '<div class="card cp-final">✦ The Son is defeated. The World Between Worlds is safe, for now. Your campaign continues: rescue every remaining hero.</div>' : ''}
-    ${r.recruits.length ? `<h4>Rescued</h4><div class="cp-wave">${r.recruits.map(n => `<div class="cp-chip big">${cpPortrait(n)}<b>${esc(n)}</b> joins your roster</div>`).join('')}</div>` : ''}
+    ${r.final ? `<div class="card cp-final">${cpSide().final}</div>` : ''}
+    ${r.recruits.length ? `<h4>${cpSide().Got}</h4><div class="cp-wave">${r.recruits.map(n => `<div class="cp-chip big">${cpPortrait(n)}<b>${esc(n)}</b> joins your roster</div>`).join('')}</div>` : ''}
     ${r.opts.length ? `<h4>Optional objectives</h4><ul class="cp-opts">${r.opts.map(o => `<li class="${o.ok ? 'got' : ''}">${o.ok ? '✓' : '✗'} ${esc(o.t)}</li>`).join('')}</ul>` : ''}
     <p>Your squad gains <b>${r.xp} XP</b>.${r.lv.map(l => ` <b class="cp-good">${esc(cpShort(l.n))} reached Level ${l.lv}</b>, unlocking ${esc(cpAbs(l.n)[l.lv - 1].name)}!`).join('')}</p>
     <button class="btn-primary" onclick="CP.last=null;cpSave();cpView('map')">Continue <span aria-hidden="true">→</span></button></section>`;

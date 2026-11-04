@@ -2,6 +2,27 @@
 // To announce a change, add a new entry at the TOP of this list. The newest entry
 // shows on the menu, and players who haven't seen it yet get a "NEW" badge.
 const UPDATES = [
+  {date:'Nov 4, 2026', title:'Cooldowns, New Characters and the Dark Side Campaign', items:[
+    'Ability cooldowns: an Action that Stuns or Taunts recharges for 2 rounds after use, and every other Action for 1 round. A number on the button shows the rounds left.',
+    'Epic Actions are still once per game, but they can only be used from Round 3. Passives, Attacks and automatic Epics have no cooldown.',
+    'New Light Side: Nomi Sunrider and Kyp Durron. New Dark Side: Exar Kun and Luuke Skywalker. 72 characters are now available.',
+    'New Dark Side path in the World Between Worlds: start with one random Sith or Dark Side warrior and recruit 35 more.',
+    '27 new missions from the Dark Side point of view, from Duel of the Fates and the Arrest to Malachor, Exegol and the Star Forge.',
+    'Darth Krayt gets his own mission: defeat Obi-Wan Kenobi, then Grand Master Luke and Ben Skywalker.',
+    'Exar Kun faces Nomi Sunrider, then Kyp Durron and Grand Master Luke. Luuke fights Luke and Mara Jade on Wayland.',
+    'New Light Side missions: Nomi Sunrider leads the Jedi against Exar Kun, and Kyp Durron confronts the Sith spirit that corrupted him.',
+    'Grand Master: the spirit of Exar Kun now haunts the Jedi academy in the second phase, replacing Darth Nihilus.',
+    'Campaign balance for the new rules: Vader has 19 Health on Jedha, Talon, Nihl and Krayt are weaker in The One Sith, the Purge survivors have 9 then 6 Health, and the Jedi on Malachor have less Health.',
+    'New twists: Jedi who arrive mid-battle, random Order 66 survivors and Jedi voices, and Malak draining captive Jedi for Health.',
+    'The Dark Side final boss is the Daughter, the embodiment of the Light Side from Mortis, now with her own portrait.',
+    'The Light and Dark campaigns are saved separately, so you can play both.',
+    "Fix: Mara Jade (Emperor's Hand) now gets her +2d6 Attack and 4-Health recovery against Grand Master Luke and Jedi Master Luke, not just Luke (Jedi Knight).",
+    'The computer now uses Shatterpoint, Battle Precognition, Sever Force, Execute Order 66, Force Barrier, Orbalisk Armor Surge and One with the Force.',
+    "Luuke Skywalker: Genetic Identity now works differently. When Luuke is defeated, Mara Jade (Emperor's Hand) recovers 4 Health. He no longer counts as Luke Skywalker.",
+    "Jedi allies count again for Bastila's Battle Meditation, Satele's Grand Master's Resolve and Grand Master Luke's Grand Master's Guidance, alongside their own faction.",
+    "Dark Side campaign: the turn banner now says Dark Side's turn on your turns and Light Side's turn on the enemy's, instead of the other way round.",
+    "Execute Order 66 can no longer target Jolee Bindo, who is immune to enemy abilities. Ki-Adi-Mundi's Defensive Counter status now shows the correct 2 damage.",
+  ]},
   {date:'Nov 3, 2026', title:'World Between Worlds Campaign', items:[
     'New single-player Light Side campaign: explore a randomized map of portals in the World Between Worlds.',
     'Start with one random Light Side hero and rescue 33 more by reliving iconic duels, from the Duel of the Fates to the Star Forge.',

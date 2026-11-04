@@ -199,7 +199,7 @@ function lobbyScreen(){
     </section>
     <section class="menu-panel camp-panel">
       <div class="panel-icon">✧</div><div class="panel-eyebrow">SINGLE PLAYER CAMPAIGN</div>
-      <h3>World Between Worlds</h3><p>Explore a randomized realm of portals, relive iconic duels, rescue heroes and level them up, then face the Son.</p>
+      <h3>World Between Worlds</h3><p>Explore a randomized realm of portals and relive iconic duels. Rescue Jedi and face the Son, or gather the Sith and face the Daughter.</p>
       <button class="btn-primary btn-wide" onclick="cpOpen()">Enter the World Between Worlds <span aria-hidden="true">→</span></button>
     </section>
     <section class="menu-grid">

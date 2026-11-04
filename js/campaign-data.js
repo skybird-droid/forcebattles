@@ -8,6 +8,7 @@
 //            hp = boss Health, lvl = only that many of the character's abilities, as = shown in the log
 //   win      {type:'survive', rounds:N} = hold out until Round N ends (default: defeat every wave)
 //   protect  if any of these fall, the mission fails
+//   guestHp  {name: Health} for a guest in this mission only
 //   rules    proj, floor, lastStand, gate, hazard, captives, events, waveText (see cpRoundStart in campaign.js)
 //   opts     optional objectives: rounds (win by end of Round N), alive, noLoss, finisher, noStun,
 //            captives, noHazard, hpBelow, hpAbove, waveBy (see cpOpt in campaign.js)
@@ -64,8 +65,8 @@ const CP_MISSIONS = [
     lore:'Legends · Star Wars: Legacy',
     premise:"Cade Skywalker, the reluctant heir of the Skywalker line, takes the fight to the One Sith. Darth Talon, Darth Nihl and Darth Krayt himself stand in his way.",
     main:'Defeat Darth Talon, Darth Nihl and Darth Krayt.',
-    waves:[[{n:'Darth Talon', hp:13}], [{n:'Darth Nihl', hp:13}], [{n:'Darth Krayt', hp:20}]],
-    special:['Three phases: Talon, then Nihl (Krayt\'s Hand), then Krayt.', 'Talon and Nihl have 13 Health, Krayt has 20.'],
+    waves:[[{n:'Darth Talon', hp:11}], [{n:'Darth Nihl', hp:11}], [{n:'Darth Krayt', hp:14}]],
+    special:['Three phases: Talon, then Nihl (Krayt\'s Hand), then Krayt.', 'Talon and Nihl have 11 Health, Krayt has 14.'],
     opts:[{t:'Cade is still standing at the end.', c:{alive:['Cade Skywalker']}}, {t:'Win by the end of Round 9.', c:{rounds:9}}],
     outro:"Krayt's armor cracks and the One Sith scatter. Cade decides, for once, to stay and fight."},
 
@@ -82,9 +83,9 @@ const CP_MISSIONS = [
     lore:'Alternate history · Star Wars Jedi: Survivor',
     premise:"Cere Junda makes her last stand against Darth Vader, the moment that ended her story. This time, you are there to stand with her.",
     main:'Defeat Darth Vader with Cere still standing.',
-    waves:[[{n:'Darth Vader', hp:22}]],
+    waves:[[{n:'Darth Vader', hp:19}]],
     protect:['Cere Junda'],
-    special:['Darth Vader has 22 Health. This is one of the hardest fights in the World Between Worlds.', 'If Cere falls, history repeats itself and the mission fails.'],
+    special:['Darth Vader has 19 Health. This is one of the hardest fights in the World Between Worlds.', 'If Cere falls, history repeats itself and the mission fails.'],
     opts:[{t:'None of your characters falls.', c:{noLoss:true}}, {t:'Win by the end of Round 7.', c:{rounds:7}}],
     outro:'Vader withdraws, and Cere Junda lives to teach another generation.'},
 
@@ -109,10 +110,10 @@ const CP_MISSIONS = [
 
   {id:'legends', title:'Grand Master', recruit:['Grand Master Luke Skywalker', 'Mara Jade Skywalker', 'Ben Skywalker'], slots:1, tier:3,
     lore:'Legends · Dark Empire, the Jedi Academy trilogy, Fate of the Jedi',
-    premise:"Three of Luke Skywalker's greatest Legends-era struggles echo together: the reborn Emperor of Dark Empire, a Sith spirit haunting his Jedi academy, and the conflict with Abeloth that drew him into contact with Darth Krayt.",
-    main:'Defeat the Sith Eternal Emperor, the dark spirit and Darth Krayt.',
-    waves:[[{n:'Sith Eternal Emperor', hp:12, skip:['Essence Transfer']}], [{n:'Darth Nihilus', hp:12, as:'stand-in for the spirit of Exar Kun'}], [{n:'Darth Krayt', hp:16}]],
-    special:["Three phases. The second foe is Darth Nihilus as a thematic stand-in for the spirit of Exar Kun, who isn't in the game. It is not Nihilus's own story.", "With no clone bodies left, the Emperor's essence has nowhere to go: Essence Transfer is disabled here."],
+    premise:"Three of Luke Skywalker's greatest Legends-era struggles echo together: the reborn Emperor of Dark Empire, the spirit of Exar Kun haunting his Jedi academy, and the conflict with Abeloth that drew him into contact with Darth Krayt.",
+    main:'Defeat the Sith Eternal Emperor, the spirit of Exar Kun and Darth Krayt.',
+    waves:[[{n:'Sith Eternal Emperor', hp:12, skip:['Essence Transfer']}], [{n:'Exar Kun', hp:12, as:'the spirit haunting the Jedi academy'}], [{n:'Darth Krayt', hp:16}]],
+    special:["Three phases: the Sith Eternal Emperor, then the spirit of Exar Kun (12 Health), then Darth Krayt.", "With no clone bodies left, the Emperor's essence has nowhere to go: Essence Transfer is disabled here."],
     opts:[{t:'Mara Jade is still standing at the end.', c:{alive:['Mara Jade Skywalker']}}, {t:'Ben Skywalker is still standing at the end.', c:{alive:['Ben Skywalker']}}],
     outro:'Three shadows fade. The Skywalker family steps through the portal together.'},
 
@@ -259,6 +260,24 @@ const CP_MISSIONS = [
     special:['Darth Malgus has 18 Health.'],
     opts:[{t:'Satele is still standing at the end.', c:{alive:['Satele Shan']}}, {t:'Win by the end of Round 6.', c:{rounds:6}}],
     outro:'Malgus retreats with a cold promise to return. Satele turns to you: there is still hope.'},
+
+  {id:'sithwar', title:'The Sith War', recruit:['Nomi Sunrider'], slots:1, tier:2,
+    lore:'Legends · Tales of the Jedi: The Sith War',
+    premise:"Exar Kun has raised a Sith empire from the jungle temples of Yavin 4, and his Brotherhood of the Sith has set the galaxy against the Jedi. Nomi Sunrider leads the Jedi to Yavin to end his war.",
+    main:'Defeat Exar Kun.',
+    waves:[[{n:'Exar Kun', hp:18}]],
+    special:['Exar Kun has 18 Health.', 'His double-bladed lightsaber hits harder for every enemy that surrounds him.'],
+    opts:[{t:'Nomi is still standing at the end.', c:{alive:['Nomi Sunrider']}}, {t:'Win by the end of Round 6.', c:{rounds:6}}],
+    outro:"The Jedi join their power, and Exar Kun's body is destroyed. His spirit is bound to the temples of Yavin 4, and Nomi Sunrider joins you."},
+
+  {id:'academy', title:'Champion of the Force', recruit:['Kyp Durron'], slots:1, tier:2,
+    lore:"Legends · Jedi Academy Trilogy",
+    premise:"At Luke Skywalker's Jedi academy on Yavin 4, the spirit of Exar Kun whispered to Kyp Durron and drew him to the dark side. Kyp has come back to the temple to face the Sith Lord who used him.",
+    main:'Defeat Exar Kun.',
+    waves:[[{n:'Exar Kun', hp:14, as:'spirit'}]],
+    special:['Exar Kun has 14 Health.'],
+    opts:[{t:'Kyp is still standing at the end.', c:{alive:['Kyp Durron']}}, {t:'Win by the end of Round 5.', c:{rounds:5}}],
+    outro:"The light of the Jedi drives Exar Kun's spirit out of the temple for good. Kyp Durron joins you to make up for what he has done."},
 ];
 
 // Optional training portals: echoes of Dark Side warriors, for experience only.
@@ -277,7 +296,7 @@ const CP_SON = {n:'The Son', s:'D', t:['Mortis', 'Dark Side'], h:22, a:4, d:3, i
 const CP_BOSS = {id:'son', title:'The Son', slots:4, lore:'Canon · The Clone Wars, Season 3 (Mortis)',
   premise:"At the far end of the World Between Worlds waits the Son, the embodiment of the Dark Side from Mortis. He has drawn echoes of the Sith you defeated to his side, and he will not stay down easily.",
   main:'Defeat the Son and his echo, then defeat the Son again.',
-  waves:[[{son:1, hp:12}, {echo:1}], [{son:1, hp:20}]],
+  waves:[[{son:1, hp:12}, {echo:1}], [{son:1, hp:20, label:'The Son, unbound'}]],
   rules:{hazard:{n:3, dmg:1, label:'Eclipse shadow'}, waveText:['', '🌑 Mortis darkens. The Son rises again, unbound, with 20 Health.']},
   special:['Two phases: the Son (12 Health) with an echo of a Sith you have defeated, then the Son unbound (20 Health).', 'Eclipse shadows: at the start of every round, anyone standing in a shadow takes 1 damage. Then the shadows drift.', 'Bring your strongest squad: no guests will help you here.'],
   opts:[{t:'None of your characters falls.', c:{noLoss:true}}, {t:'Win by the end of Round 12.', c:{rounds:12}}],

@@ -134,3 +134,31 @@ WORLD BETWEEN WORLDS CAMPAIGN (Nov 3) - js/campaign-data.js, js/campaign.js, css
 - Level 3 = Portal Vet (CP_VET, campaign-only passive): cpHero() gives the unit +1 Attack die, +1 Defense die and +2 Health on top of both abilities. Every Light Side character has two abilities, so it is always the third slot. Guests and enemies never get it.
 - The Son uses portraits/theson.png; his ability icons (and Portal Vet's) are added to ABICON in campaign-data.js.
 - Ben vs Caedus is flagged hidden:1: new maps leave it out, and cpHideRemoved() unlinks it from older saved maps (node ids are kept so progress isn't disturbed). Remove the flag to bring the portal back.
+
+DARK SIDE CAMPAIGN (Nov 4)
+- js/campaign-dark.js holds CP_MISSIONS_D (27 missions), CP_ECHO_D (Light Side echoes), CP_DAUGHTER (campaign-only final boss: Light of Mortis = Size Matters Not, Mortis Wave = Force Wave, Blinding Radiance = Battle Precognition; portrait portraits/thedaughter.png) and CP_BOSS_D.
+- campaign.js is side-aware through CP_SIDES / CPS: each side has its own save (fb-campaign = Light, fb-campaign-dark = Dark), and fb-campaign-side remembers the last side played. The campaign menu shows both paths.
+- New mission fields: waves {from:[...], label} (random enemy from a list, no repeats per battle), rules.arrive (enemy joins at a round, or early once the rest of its side falls), captives.free (team that frees captives), guestHp (a guest's Health in that mission only), opts killBy and drained.
+- Darth Krayt: d_krayt (Obi-Wan, then Grand Master Luke and Ben Skywalker), thematic matchup; every Dark Side character is now recruitable.
+- Mara Jade (Emperor's Hand): her +2d6 vs Luke was only matching Luke (Jedi Knight), because isLuke() checked startsWith('Luke'). isLuke() now matches any name containing 'Luke'.
+- Balance (computer plays both sides, Level 1 squads, 40-50 games each): most missions 55-100%, tier 3 missions 55-80%. The Daughter: 63% with a Level 2 squad, 100% at Level 3 (Portal Vet).
+
+NEW CHARACTERS 4 + ABILITY AUDIT (Nov 4): 72 characters
+- Nomi Sunrider (L): 'nomi' aura (Old Republic or Jedi allies within 3 get +1d6 Defense, not herself), a_nsever (3d6 range 2; on damage: st.nopas = passives off this round, plus Stun). k() treats st.nopas like st.sever for passives only.
+- Exar Kun (D): 'dblade' (+1d6 per adjacent enemy beyond the first, adjacent targets only), e_ruin (4d6 range 2, then 1 unblockable to every other character next to the target, friend or foe, not Exar).
+- Kyp Durron (L): 'rawpow' (two or more 6s on an Attack roll = +2 unblockable damage, in att()), e_shadow (3 unblockable, push 2, Stun, range 2).
+- Luuke Skywalker (D, Clone): 'luuke' (does NOT count as Luke; when he dies, every living unit with 'mara' (Mara Jade, Emperor's Hand) heals 4, handled in die()), a_clone (4d6 adjacent; st.cdef +1d6 Defense until his next turn if 2+ enemies were adjacent).
+- Campaign: Light 'sithwar' (Nomi vs Exar 18 HP, 1 slot, ~80%) and 'academy' (Kyp vs Exar 14 HP, 1 slot, ~80%); Dark 'd_exar' (Nomi 8, then Kyp 8 + GM Luke 9, 2 slots, ~63%) and 'd_wayland' (Luuke vs Luke JK + Mara Jade Skywalker, 2 slots, ~75%).
+- Audit: every Action/Epic was exercised in 400 random AI battles and direct tests. Fixes: isLuke (above); Order 66 now skips Jolee ('immune'); Ki-Adi's counter status text said 1 damage (it deals 2).
+- AI: AI_EPV in ai.js scores the support Epics the computer never chose before (Shatterpoint, Battle Precognition, Sever Force, Order 66, Force Barrier, Orbalisk Armor Surge, One with the Force). e_ruin is scored with its splash.
+
+COOLDOWNS (Nov 4)
+- game.js: CD2 lists Actions that Stun or Taunt (cooldown 2); every other Action has cooldown 1; abCd(key) gives it. Using an Action sets u.cd[key] = round + cooldown + 1, so it skips that many following rounds. cdLeft(u,key) gives the rounds left (shown as a number on the button), and doAb refuses while it is above 0. back() restores u.cd from G.abSnap.
+- Epic Actions (AB entries with ep) stay once per game and are locked until Round EPIC_READY (3). Automatic Epics (I Am a Jedi, All the Jedi, Snips' Counter, More Powerful Than You Can Imagine) and passives are not affected.
+- The AI skips abilities on cooldown (aiBest). How to play explains the rule.
+- Grand Master ('legends'): the second phase is now Exar Kun (12 HP, "the spirit haunting the Jedi academy") instead of the Nihilus stand-in.
+- Rebalanced after cooldowns and the AI Epic change (100 sims each): jedha Vader 19 (~63%), legacy Talon/Nihl 11 and Krayt 14 (~54%), d_purge survivors 9 then 6 (~60%), d_malachor Kanan 9 / Ezra 8 / Ahsoka 12 (~66%). The Daughter is ~20-35% with a Level 2 squad and ~95-100% at Level 3.
+
+DARK CAMPAIGN SIDE LABELS (Nov 4)
+- In the campaign the player is always team 0. sideOf(t) in game.js flips team -> side when cpLive() && CPS=='D', so the turn/win bars and toasts say "Dark Side" for the player in the Dark campaign. Everywhere else sideOf(t) == t.
+- Jedi tag restored (Nov 4): Bastila 'medit' (Old Republic OR Jedi), Satele 'resolve' (Old Republic OR Jedi), GM Luke 'guidance' (New Republic OR Jedi). Card text updated.
