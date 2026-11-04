@@ -197,6 +197,11 @@ function lobbyScreen(){
       <p class="hero-copy">Build a squad of four legendary warriors and outthink your opponent in a turn-based Star Wars-inspired duel.</p>
       <div class="hero-stats"><div><strong>4v4</strong><span>SQUAD BATTLES</span></div><div><strong>d6</strong><span>DICE COMBAT</span></div><div><strong>1v1</strong><span>ONLINE DUELS</span></div></div>
     </section>
+    <section class="menu-panel camp-panel">
+      <div class="panel-icon">✧</div><div class="panel-eyebrow">SINGLE PLAYER CAMPAIGN</div>
+      <h3>World Between Worlds</h3><p>Explore a randomized realm of portals, relive iconic duels, rescue heroes and level them up, then face the Son.</p>
+      <button class="btn-primary btn-wide" onclick="cpOpen()">Enter the World Between Worlds <span aria-hidden="true">→</span></button>
+    </section>
     <section class="menu-grid">
       <div class="menu-panel online-panel">
         <div class="panel-icon">⌁</div><div class="panel-eyebrow">PLAY WITH A FRIEND</div>

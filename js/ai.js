@@ -5,7 +5,7 @@
 // values for stuns, heals, buffs and Epics. It does not look ahead to the opponent's reply.
 let AI = null, AI_ME = 0;   // AI: {side, timer, acting, busy, plan, tgt, steps}; AI_ME: the side the player picked
 const AI_DELAY = 650;
-const aiOn = () => !!AI && !NET && LOBBY.mode == 'ai';
+const aiOn = () => !!AI && !NET && (LOBBY.mode == 'ai' || LOBBY.mode == 'camp');   // 'camp': campaign battles (js/campaign.js)
 const aiTurn = () => aiOn() && !!G && G.win == null && ctrl() == AI.side;
 
 // ---- setup screen ----
@@ -57,7 +57,7 @@ function aiAbValue(u, a, A, T){
     } else if (/recover|heal/i.test(desc)) {
       const n = +((desc.match(/(?:recovers?|heals?)\D{0,24}(\d+)/i) || [])[1]) || 3;
       pick(t, Math.min(t.d.h - t.hp, n) * 1.2);
-    } else pick(t, en(u).some(v => dist(v, t) <= 3) ? 2 : .5);
+    } else pick(t, en(u).some(v => dist(v, t) <= 3) ? 1.2 : .4);   // buffs and Taunts: worth less than a solid attack, so nobody turtles forever
   });
   if (best && a.type == 'Epic' && key != 'e_transfer' && key != 'e_purrgil') best.score -= 2.5;   // save Epics for a strong moment
   return best;

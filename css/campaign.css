@@ -1,0 +1,125 @@
+/* World Between Worlds campaign (js/campaign.js) */
+.camp-panel{margin:0 0 18px;border-top:3px solid #9fe8ff;background:radial-gradient(120% 140% at 85% 0%,#1d3550 0%,#0e1929 55%),#0e1929;position:relative;overflow:hidden}
+.camp-panel p{min-height:0}
+.camp-panel:after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;border:2px solid #9fe8ff33;box-shadow:0 0 0 18px #9fe8ff0d,0 0 0 40px #9fe8ff08;pointer-events:none}
+
+.cp-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin:6px 0 16px}
+.cp-head h2{margin:4px 0 6px;font-size:clamp(28px,4vw,42px)}
+.cp-head p{margin:0;color:var(--muted);max-width:640px}
+.cp-head-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+.cp-paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.cp-path p{min-height:0}
+.cp-path.L{border-top:3px solid var(--L)}
+.cp-path.D{border-top:3px solid var(--D)}
+.cp-soon{opacity:.6}
+.cp-progress{margin:10px 0;color:var(--muted);font-size:14px}
+.cp-path .btn-ghost{margin-top:8px}
+
+.cp-intro{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;border-top:3px solid var(--gold)}
+.cp-intro>div{flex:1 1 300px;min-width:0}
+.cp-intro p{min-height:0}
+
+.cp-face{display:inline-block;flex:none;width:30px;height:30px;border-radius:50%;background:#0b1626 center top/cover no-repeat;border:1px solid var(--ln);vertical-align:middle}
+.cp-face.mid{width:64px;height:64px}
+.cp-face.big{width:min(180px,40vw);height:min(180px,40vw);border:2px solid var(--gold);box-shadow:0 0 30px #f3c66a44}
+
+.cp-abs{list-style:none;padding:0;margin:12px 0 18px;display:grid;gap:8px}
+.cp-abs li{padding:9px 12px;border:1px solid var(--ln);border-radius:9px;background:#0b1626;line-height:1.45}
+.cp-abs li i{color:var(--muted);font-size:12px}
+.cp-abs li span{color:#c2d2e5;font-size:14px}
+.cp-abs li.cp-lock{opacity:.55;border-style:dashed}
+
+/* map */
+.cp-stats{display:flex;gap:10px 22px;flex-wrap:wrap;margin:0 0 12px;color:var(--muted);font-size:14px}
+.cp-stats b{color:var(--fg)}
+.cp-map{overflow-x:auto;border:1px solid var(--ln);border-radius:16px;background:radial-gradient(ellipse at 50% 50%,#13263d 0%,#070d18 70%),#070d18;box-shadow:inset 0 0 80px #000a}
+.cp-svg{display:block;width:100%;min-width:760px;height:auto;background-image:radial-gradient(1px 1px at 12% 22%,#fff8,transparent),radial-gradient(1px 1px at 37% 71%,#fff6,transparent),radial-gradient(1.5px 1.5px at 64% 18%,#cfefff8a,transparent),radial-gradient(1px 1px at 82% 63%,#fff5,transparent),radial-gradient(1px 1px at 53% 44%,#fff4,transparent),radial-gradient(1.5px 1.5px at 22% 86%,#cfefff66,transparent),radial-gradient(1px 1px at 91% 31%,#fff6,transparent)}
+.cp-path-ln{stroke:#9fe8ff;stroke-opacity:.16;stroke-width:2;stroke-dasharray:6 7}
+.cp-path-ln.half{stroke-opacity:.42;stroke-dasharray:none}
+.cp-path-ln.lit{stroke:#f3c66a;stroke-opacity:.75;stroke-width:3;stroke-dasharray:none;filter:drop-shadow(0 0 4px #f3c66a88)}
+.cp-node .cp-ring{fill:#0b1626;stroke:#3a4f69;stroke-width:2}
+.cp-node .cp-core{fill:#101d2e}
+.cp-glyph,.cp-lockico{fill:#9fb3cc;font-size:22px;text-anchor:middle;font-weight:900}
+.cp-lockico{font-size:16px}
+.cp-label{fill:#c9d8ea;font-size:13px;font-weight:800;text-anchor:middle;paint-order:stroke;stroke:#070d18;stroke-width:4px}
+.cp-check{fill:#f3c66a;font-size:16px;font-weight:900;paint-order:stroke;stroke:#070d18;stroke-width:4px}
+.cp-node[role=button]{cursor:pointer}
+.cp-node[role=button]:focus{outline:none}
+.cp-node[role=button]:focus .cp-ring,.cp-node[role=button]:hover .cp-ring{stroke-width:4}
+.cp-node.open .cp-ring{stroke:#9fe8ff;stroke-width:3}
+.cp-node.open .cp-halo{animation:cppulse 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.cp-node.done .cp-ring{stroke:#f3c66a}
+.cp-node.done image{opacity:.85}
+.cp-node.start .cp-ring{stroke:#f3c66a;stroke-width:3}
+.cp-node.seen{opacity:.55}
+.cp-node.seen .cp-ring{stroke-dasharray:4 4}
+.cp-node.locked image,.cp-node.sealed image,.cp-node.far image{opacity:.35;filter:grayscale(1)}
+.cp-node.boss .cp-ring{stroke:#ff4d5e;stroke-width:3;filter:drop-shadow(0 0 8px #ff3b4a99)}
+.cp-node.echo .cp-ring{stroke:#b48cff}
+.cp-node.echo .cp-glyph{fill:#cdb4ff}
+.cp-node.sel .cp-ring{stroke:#fff;stroke-width:4}
+@keyframes cppulse{0%,100%{opacity:.55;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+.cp-legend{display:flex;gap:8px 18px;flex-wrap:wrap;margin:10px 2px 16px;color:var(--muted);font-size:13px}
+.cp-legend .lg{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:2px solid}
+.lg.open{border-color:#9fe8ff;box-shadow:0 0 6px #9fe8ff}
+.lg.done{border-color:#f3c66a}
+.lg.seen{border-color:#3a4f69;border-style:dashed}
+.lg.locked{border-color:#ff4d5e}
+.cp-hint{color:var(--muted);text-align:center}
+
+/* mission briefing */
+.cp-brief{margin-top:4px;border-top:3px solid #9fe8ff;scroll-margin-top:70px}
+.cp-brief p{min-height:0}
+.cp-brief h4{margin:16px 0 6px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#9bcfff}
+.cp-brief h4 small{text-transform:none;letter-spacing:0;color:var(--muted)}
+.cp-brief-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.cp-brief-top h3{margin-bottom:0}
+.cp-cols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:4px 28px}
+.cp-main{font-weight:800;color:var(--fg)!important;margin:0}
+.cp-opts,.cp-rules{margin:0;padding-left:20px;color:var(--muted);line-height:1.6}
+.cp-opts{list-style:none;padding-left:0}
+.cp-opts li.got{color:var(--gold)}
+.cp-wave{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+.cp-wave-n{font-size:11px;font-weight:900;letter-spacing:.08em;color:var(--muted);flex-basis:100%}
+.cp-chip{display:inline-flex;gap:8px;align-items:center;padding:4px 12px 4px 4px;border:1px solid var(--ln);border-radius:999px;background:#0b1626;font-size:14px;font-weight:700}
+.cp-chip small{color:#ff929a}
+.cp-chip.big .cp-face{width:44px;height:44px}
+.cp-sealed{border-color:#ff4d5e88;color:#ffb3ba}
+.cp-squad{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin:0 0 16px}
+.cp-pick{display:flex;gap:10px;align-items:center;text-align:left;min-height:56px;padding:6px 10px;font-weight:600}
+.cp-pick .cp-face{width:40px;height:40px}
+.cp-pick span{display:flex;flex-direction:column;min-width:0}
+.cp-pick small{color:var(--muted);font-weight:600}
+.cp-pick.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;background:#2a2412}
+.cp-pick:disabled{opacity:.45}
+
+/* roster and results */
+.cp-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px}
+.cp-hero{padding:16px}
+.cp-hero-top{display:flex;gap:14px;align-items:center}
+.cp-hero-top>div{flex:1;min-width:0}
+.cp-lv{margin-top:4px;font-size:13px;font-weight:800;color:var(--gold)}
+.cp-bar{height:6px;margin-top:5px;border-radius:9px;background:#1a2b41;overflow:hidden}
+.cp-bar i{display:block;height:100%;background:linear-gradient(90deg,#9fe8ff,#f3c66a)}
+.cp-result{border-top:3px solid var(--gold)}
+.cp-result.lose{border-top-color:var(--D)}
+.cp-result p{min-height:0}
+.cp-final{border-color:var(--gold);color:var(--gold);margin:10px 0}
+.cp-good{color:#6df0a0}
+.cp-bad{color:#ff929a}
+
+/* in battle */
+.cp-banner{border-color:#9fe8ff66}
+.cp-banner-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.cp-banner-goal{margin-top:6px;color:#c2d2e5}
+.cp-banner details{margin-top:6px;color:var(--muted);font-size:14px}
+.cp-banner summary{cursor:pointer;font-weight:700}
+.cp-banner ul{margin:6px 0;padding-left:20px}
+.board .c.cp-haz{background-color:#3a1a0c;box-shadow:inset 0 0 0 2px #ff7a1a,inset 0 0 18px #ff5a0088}
+.board .c.cp-haz:not(.U):after{content:"🔥";font-size:clamp(14px,2.4vw,22px)}
+.board .c.cp-cap{box-shadow:inset 0 0 0 2px #9fe8ff,inset 0 0 18px #9fe8ff55}
+.board .c.cp-cap:not(.U):after{content:"⛓";font-size:clamp(14px,2.4vw,22px);color:#9fe8ff}
+
+@media(max-width:700px){.cp-paths,.cp-cols{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.cp-node.open .cp-halo{animation:none}}

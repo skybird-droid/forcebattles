@@ -2,6 +2,15 @@
 // To announce a change, add a new entry at the TOP of this list. The newest entry
 // shows on the menu, and players who haven't seen it yet get a "NEW" badge.
 const UPDATES = [
+  {date:'Nov 3, 2026', title:'World Between Worlds Campaign', items:[
+    'New single-player Light Side campaign: explore a randomized map of portals in the World Between Worlds.',
+    'Start with one random Light Side hero and rescue 33 more by reliving iconic duels, from the Duel of the Fates to the Star Forge.',
+    'Missions have waves, survival objectives, hazards, captives to free, scripted moments and optional objectives for bonus experience.',
+    "Heroes level up to Level 3. Levels 1 and 2 unlock their abilities, and Level 3 grants Portal Vet: +1d6 Attack, +1d6 Defense and +2 Health. Multiplayer isn't affected.",
+    'Clear 12 portals to open the way to the final boss: the Son, now with his own portrait and ability icons.',
+    'New campaign mission, The Awakening: Rey faces a wounded Kylo Ren alone on Starkiller Base. Win to add Rey to your roster.',
+    "Ben Skywalker's sealed portal has been removed from the map for now. You can still rescue Ben in Grand Master.",
+  ]},
   {date:'Nov 1, 2026', title:'VS Computer and Character Overhaul', items:[
     'New VS Computer mode: pick a side and a squad, then battle a computer opponent with a random squad.',
     "Barriss Offee (Fallen) loses Saber Disarm; she keeps Betrayer's Guile and Healer's Touch.",
