@@ -2,6 +2,16 @@
 // To announce a change, add a new entry at the TOP of this list. The newest entry
 // shows on the menu, and players who haven't seen it yet get a "NEW" badge.
 const UPDATES = [
+  {date:'Nov 9, 2026', title:'The Qel-Droma Brothers and a New Look', items:[
+    'New holotable look: a glowing tactical grid board, war-room panels, sharper buttons and a new title font.',
+    'Better on phones: the board fills the screen width, the turn banner is shorter, your unit\'s actions dock to the bottom of the screen, and Start battle stays docked at the bottom while you pick your squad.',
+    'New Light Side: Cay Qel-Droma. New Dark Side: Ulic Qel-Droma. 74 characters are now available.',
+    "Cay's Brotherly Sacrifice: when an enemy attack defeats him, his killer is Stunned, and an enemy Ulic is redeemed. Ulic turns to the Light Side, joins Cay's team as a Jedi and heals 4.",
+    'Ulic gets +1d6 Attack when 2 or more enemies surround him or when Exar Kun is on his team. His Sith Brotherhood Strike Stuns on 3 or more damage.',
+    'The Sith War: Cay Qel-Droma now fights beside Nomi Sunrider, and Ulic Qel-Droma stands with Exar Kun. If Cay falls while Ulic still fights, Ulic joins your side.',
+    "New Dark Side mission, Brother Against Brother: Ulic faces Cay and Nomi on Ossus. Bonus objective: don't let Ulic land the final blow on his brother.",
+    "In the campaign, your own Ulic never switches sides when Cay falls.",
+  ]},
   {date:'Nov 4, 2026', title:'Cooldowns, New Characters and the Dark Side Campaign', items:[
     'Ability cooldowns: an Action that Stuns or Taunts recharges for 2 rounds after use, and every other Action for 1 round. A number on the button shows the rounds left.',
     'Epic Actions are still once per game, but they can only be used from Round 3. Passives, Attacks and automatic Epics have no cooldown.',

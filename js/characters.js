@@ -71,7 +71,9 @@ const R=[
 {n:'Nomi Sunrider',s:'L',t:['Jedi','Old Republic','Force-Sensitive'],h:10,a:2,d:3,k:['nomi','a_nsever'],x:`Passive Battle Meditation Aura: all Old Republic or Jedi allies within 3 spaces add +1d6 Defense when defending against attacks. Action Sever Force Stuns: target an enemy character within 2 spaces. Roll a 3d6 Attack. If this attack deals damage, the target loses all passive abilities (until the end of the round) and is Stunned.`},
 {n:'Exar Kun',s:'D',t:['Sith','Sith Empire','Force-Sensitive'],h:14,a:4,d:2,k:['dblade','e_ruin'],x:`Passive Double-Bladed Master: when Exar Kun performs an Attack against an engaged target, he adds +1d6 Attack for every other enemy character engaged with him beyond the first. Epic Dark Blast of Ruin: once per game, target an enemy up to 2 spaces away. Perform a 4d6 Attack against that target and deal 1 unblockable damage to every other character adjacent to that target, friend or foe.`},
 {n:'Kyp Durron',s:'L',t:['Jedi','New Republic','Force-Sensitive'],h:11,a:4,d:2,k:['rawpow','e_shadow'],x:`Passive Raw Force Power: whenever Kyp Durron rolls at least two 6s on an Attack roll, he deals +2 bonus unblockable damage to the target. Epic Shadow Academy Mastery: once per game, target an enemy up to 2 spaces away. Deal 3 unblockable damage, push that target 2 spaces away (breaking engagement), and inflict Stun.`},
-{n:'Luuke Skywalker',s:'D',t:['Imperial','Dark Jedi','Force-Sensitive','Clone'],h:11,a:3,d:2,k:['luuke','a_clone'],x:`Passive Genetic Identity (Luke Skywalker): when Luuke Skywalker is defeated, Mara Jade (Emperor's Hand) recovers 4 Health, as if she had defeated Luke Skywalker. Action Aggressive Clone Strike: perform a 4d6 Attack against an adjacent target. If Luuke is engaged with more than one enemy, he gains +1d6 Defense until the start of his next turn.`}];
+{n:'Luuke Skywalker',s:'D',t:['Imperial','Dark Jedi','Force-Sensitive','Clone'],h:11,a:3,d:2,k:['luuke','a_clone'],x:`Passive Genetic Identity (Luke Skywalker): when Luuke Skywalker is defeated, Mara Jade (Emperor's Hand) recovers 4 Health, as if she had defeated Luke Skywalker. Action Aggressive Clone Strike: perform a 4d6 Attack against an adjacent target. If Luuke is engaged with more than one enemy, he gains +1d6 Defense until the start of his next turn.`},
+{n:'Cay Qel-Droma',s:'L',t:['Jedi','Old Republic','Force-Sensitive'],h:11,a:3,d:2,k:['cay','a_parry'],x:`Passive Brotherly Sacrifice & Redemption: when Cay Qel-Droma is reduced to 0 Health by an enemy attack, the enemy who landed the final blow is immediately Stunned. If an enemy Ulic Qel-Droma is on the field, Ulic immediately changes alignment to the Light Side, loses all Dark Side faction tags, gains the Jedi tag and heals 4 Health. Action Mechanical Blade Parry: Cay Qel-Droma gains Taunt until the start of his next turn. Whenever an enemy attacks him while this Taunt is active, Cay rolls +1d6 Defense.`},
+{n:'Ulic Qel-Droma',s:'D',t:['Sith','Sith Empire','Force-Sensitive'],h:13,a:3,d:2,k:['passion','a_bstrike'],x:`Passive Fallen Passion: Ulic gains +1d6 Attack while engaged with 2 or more enemies, or while deployed on the same team as Exar Kun. Action Sith Brotherhood Strike: perform a 4d6 Attack against an adjacent enemy. If this attack deals 3 or more damage after defense, the target is Stunned.`}];
 
 const IMG = {
   'Luke Skywalker (Jedi Knight)': 'portraits/lukeknight.png',
@@ -146,6 +148,8 @@ const IMG = {
   'Exar Kun': 'portraits/exarkun.png',
   'Kyp Durron': 'portraits/kyp.png',
   'Luuke Skywalker': 'portraits/luuke.png',
+  'Cay Qel-Droma': 'portraits/cayqd.png',
+  'Ulic Qel-Droma': 'portraits/ulicqd.png',
 };
 R.forEach(character => { character.img = IMG[character.n] || ''; });
 
@@ -294,7 +298,11 @@ const ABICON = {
   "Kyp Durron|Raw Force Power": "atkup",
   "Kyp Durron|Shadow Academy Mastery": "stun",
   "Luuke Skywalker|Genetic Identity (Luke Skywalker)": "heal",
-  "Luuke Skywalker|Aggressive Clone Strike": "defup"
+  "Luuke Skywalker|Aggressive Clone Strike": "defup",
+  "Cay Qel-Droma|Brotherly Sacrifice & Redemption": "stun",
+  "Cay Qel-Droma|Mechanical Blade Parry": "taunt",
+  "Ulic Qel-Droma|Fallen Passion": "atkup",
+  "Ulic Qel-Droma|Sith Brotherhood Strike": "stun"
 };
 R.sort((a,b)=>a.n.localeCompare(b.n));
 

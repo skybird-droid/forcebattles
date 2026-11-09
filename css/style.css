@@ -128,3 +128,130 @@ input{min-height:46px;padding:10px 13px;border:1px solid var(--ln);border-radius
 .ai-panel{margin-top:18px;border-top:3px solid #4fc3a1}.ai-panel p{min-height:0}
 .side-toggle{display:inline-flex;gap:0;border:1px solid var(--ln);border-radius:9px;overflow:hidden}.side-toggle button{border:0;border-radius:0;background:transparent}.side-toggle button.on{background:#1a2b41;color:var(--gold);box-shadow:inset 0 -2px 0 var(--gold)}
 .ab .cdn{position:absolute;right:3px;bottom:3px;z-index:3;min-width:16px;padding:0 4px;border-radius:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;line-height:16px;font-weight:700;text-align:center}
+
+/* ================================================================
+   HOLOTABLE THEME (Nov 9): a Jedi war-room projection.
+   Signature: corner-bracket HUD panels, blade-cut buttons, a glowing
+   holo grid board, kyber-amber primary actions and a two-tone saber
+   line under the title. Overrides the earlier layers above.
+   ================================================================ */
+:root{--bg:#04070c;--ln:#1d3144;--holo:#7fd8ff;--gold:#f2b84b;--L:#5cb8ff;--D:#ff5468;--fg:#e8f1fb;--muted:#8ea5bc;--disp:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;--bc:#7fd8ff66}
+html{background:var(--bg)}
+body{background:
+  radial-gradient(1px 1px at 12% 18%,#ffffff55 50%,transparent 51%),radial-gradient(1px 1px at 72% 9%,#ffffff40 50%,transparent 51%),
+  radial-gradient(1px 1px at 38% 62%,#ffffff30 50%,transparent 51%),radial-gradient(1px 1px at 88% 44%,#ffffff45 50%,transparent 51%),
+  radial-gradient(1px 1px at 22% 86%,#ffffff35 50%,transparent 51%),radial-gradient(1.5px 1.5px at 58% 30%,#9fe8ff50 50%,transparent 51%),
+  radial-gradient(ellipse 70% 45% at 50% -8%,#0f3550 0%,transparent 70%),var(--bg);
+  background-attachment:fixed;color:var(--fg)}
+
+/* title with a two-tone saber line */
+body>h1{position:relative;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:clamp(20px,2.6vw,30px);text-shadow:0 0 18px #7fd8ff40;padding-bottom:10px;margin-bottom:22px}
+body>h1::after{content:"";position:absolute;left:0;bottom:0;width:min(320px,70%);height:3px;border-radius:3px;background:linear-gradient(90deg,var(--L) 0 49%,#fff 49.5% 50.5%,var(--D) 51% 100%);box-shadow:0 0 10px #5cb8ff88,0 0 10px #ff546888}
+h2,h3,.panel-eyebrow,.hero-kicker,.combat-title,.log-title,.side-count,.selected-caption,.pick-filter span,.join-row label,.menu-footnote,.hero-stats strong{font-family:var(--disp)}
+
+/* HUD panels: dark glass with corner brackets */
+.card,.menu-panel,.hero,.combat,.log,.pick-toolbar,.guide-card,.resume-card,.squad-strip{border-radius:4px;border:1px solid var(--ln);box-shadow:0 10px 30px #0006;
+  background:
+   linear-gradient(var(--bc),var(--bc)) top left/16px 2px no-repeat,linear-gradient(var(--bc),var(--bc)) top left/2px 16px no-repeat,
+   linear-gradient(var(--bc),var(--bc)) top right/16px 2px no-repeat,linear-gradient(var(--bc),var(--bc)) top right/2px 16px no-repeat,
+   linear-gradient(var(--bc),var(--bc)) bottom left/16px 2px no-repeat,linear-gradient(var(--bc),var(--bc)) bottom left/2px 16px no-repeat,
+   linear-gradient(var(--bc),var(--bc)) bottom right/16px 2px no-repeat,linear-gradient(var(--bc),var(--bc)) bottom right/2px 16px no-repeat,
+   linear-gradient(160deg,#0f1b29f2,#080f18f2)}
+.resume-card,.pick-card.picked{--bc:var(--gold)}
+.menu-panel.online-panel{border-top:2px solid var(--L)}.menu-panel.local-panel{border-top:2px solid var(--gold)}
+.hero{padding:clamp(22px,5vw,56px);border-color:#24435c}
+.hero h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;line-height:1}
+.hero:after{content:"";right:clamp(-60px,2vw,40px);width:clamp(180px,28vw,340px);height:clamp(180px,28vw,340px);border-radius:50%;
+  background:repeating-radial-gradient(circle,#7fd8ff14 0 1px,transparent 1px 22px),conic-gradient(from 0deg,#7fd8ff22,transparent 25%,transparent 75%,#7fd8ff22);
+  border:1px solid #7fd8ff22;text-shadow:none;animation:holoSpin 40s linear infinite}
+@keyframes holoSpin{from{transform:translateY(-50%) rotate(0)}to{transform:translateY(-50%) rotate(360deg)}}
+/* menu icons sit in a diamond */
+.panel-icon{position:relative;isolation:isolate;border:0;background:none;width:46px;height:46px;font-size:22px}
+.panel-icon::before{content:"";position:absolute;inset:7px;z-index:-1;transform:rotate(45deg);border:1px solid #7fd8ff55;background:#7fd8ff10;box-shadow:0 0 14px #7fd8ff22}
+
+/* blade-cut buttons */
+button{font-family:var(--disp);font-weight:600;letter-spacing:.04em;border-radius:0;border:1px solid #2a4560;background:linear-gradient(180deg,#132438,#0d1a29);
+  clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+button:hover:not(:disabled){border-color:var(--holo);background:linear-gradient(180deg,#183049,#10213a);transform:none;box-shadow:inset 0 0 14px #7fd8ff22}
+button:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+.btn-primary{background:linear-gradient(180deg,#f6c766,#d99a2f);border-color:#ffd88a;color:#1b1204}
+.btn-primary:hover:not(:disabled){background:linear-gradient(180deg,#ffd57e,#e8a83a);border-color:#fff0c8;box-shadow:0 0 18px #f2b84b55}
+.btn-primary:disabled{background:linear-gradient(180deg,#5a4a2a,#3e3320);color:#cbb88f;border-color:#6b5a35}
+.btn-ghost{background:transparent}.btn-danger{background:#4a1820;border-color:#d9544f}
+/* round and free-form controls keep their own shape */
+.c,.ab,.ux-btn,.squad-chip,.sq-chipmini,.side-toggle button,.cp-pick{clip-path:none;font-family:inherit;letter-spacing:normal}
+.ux-btn{font-family:var(--disp);border-radius:3px;background:#07101add;border-color:#24435c}
+input,select{border-radius:2px!important;background:#060c14!important;border-color:#24435c!important}
+.pick-search{border-radius:2px;background:#060c14;border-color:#24435c}.pick-search input{background:transparent!important}
+
+/* turn and side bars become HUD strips */
+.bar{position:relative;border-radius:2px;font-family:var(--disp);font-weight:600;letter-spacing:.03em;padding:10px 14px;border:1px solid;border-left-width:4px;color:#fff;box-shadow:none}
+.bar.L{background:linear-gradient(90deg,#5cb8ff3d,#5cb8ff08 70%);border-color:#5cb8ff55;border-left-color:var(--L)}
+.bar.D{background:linear-gradient(90deg,#ff54683d,#ff546808 70%);border-color:#ff546855;border-left-color:var(--D)}
+.turnbar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.tb-side{font-size:18px;text-transform:uppercase;letter-spacing:.08em}
+.bar.L .tb-side{color:#cfe9ff;text-shadow:0 0 12px #5cb8ff88}.bar.D .tb-side{color:#ffd0d6;text-shadow:0 0 12px #ff546888}
+.tb-round{font-size:12px;padding:2px 8px;border:1px solid #ffffff33;letter-spacing:.12em;text-transform:uppercase}
+.tb-hint{flex:1 1 220px;font-family:system-ui,sans-serif;font-weight:500;font-size:14px;color:#d6e3f0;letter-spacing:0}
+
+/* holo board */
+.board{gap:2px;padding:6px;border-radius:3px;border:1px solid #24435c;
+  background:radial-gradient(ellipse at 50% 50%,#0d3048 0%,#061320 70%);
+  box-shadow:0 0 0 1px #000,0 0 40px #0d6b9a2e,inset 0 0 40px #000a}
+.board::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:repeating-linear-gradient(0deg,#7fd8ff07 0 1px,transparent 1px 4px)}
+.c{border-radius:1px;border:1px solid #7fd8ff1c;background:#7fd8ff08}
+.c:not(.U):hover{background:#7fd8ff16}
+.c.m:not(.U){background:repeating-linear-gradient(135deg,#3be0b033 0 6px,#3be0b012 6px 12px);border-color:#5ff0c0aa;box-shadow:inset 0 0 10px #3be0b033}
+.c.a:not(.U){background:repeating-linear-gradient(135deg,#ff546844 0 6px,#ff546818 6px 12px);border-color:#ff7a8a}
+.board .c.U{background-size:cover;background-position:center 18%;background-repeat:no-repeat}
+.c.U{border-radius:2px}
+.c.U.L{border:2px solid var(--L);box-shadow:0 0 10px #5cb8ff55,inset 0 0 0 1px #0009}
+.c.U.D{border:2px solid var(--D);box-shadow:0 0 10px #ff546855,inset 0 0 0 1px #0009}
+.c.U.a{box-shadow:0 0 0 2px #ff7a8a,0 0 14px #ff5468aa}
+.c.s{outline:2px solid var(--gold);outline-offset:-2px;box-shadow:0 0 16px #f2b84b99!important}
+.c.used{opacity:.5;filter:grayscale(.55)}
+.c.U small{background:linear-gradient(0deg,#000d,#0008);border-radius:0;font-weight:700}
+
+/* battle side column and small pieces */
+.log{background:linear-gradient(160deg,#08111bf2,#050b12f2)}
+.le{color:#c4d3e3}
+.die{border-radius:3px}.die.L{background:linear-gradient(180deg,#3b8de0,#1f5fa3)}.die.D{background:linear-gradient(180deg,#d4505e,#8f2b37)}
+.ab{border-radius:4px;background:#0a1420}
+#toast{font-family:var(--disp);border-radius:2px;background:#050b13f0;letter-spacing:.06em;text-transform:uppercase;font-size:14px}
+#tip{border-radius:3px;background:#050b13;border-color:#2c5574}
+.pick-portrait{border-radius:2px;border-width:2px}
+.pick-tags span{border-radius:2px;background:#0f2133;border-color:#24435c}
+.pick-check{border-radius:2px}
+.upd-new,.side-toggle{border-radius:2px}
+.guide-dots i{border-radius:1px;transform:rotate(45deg)}
+
+/* ---------- phones ---------- */
+@media(max-width:700px){
+  body{padding:58px 12px 24px}
+  body>h1{font-size:18px;letter-spacing:.12em;margin:0 0 14px;padding-bottom:8px}
+  body>h1::after{width:180px}
+  .hero{padding:22px 18px}.hero h2{font-size:clamp(30px,9vw,44px);margin:14px 0 12px}.hero-copy{font-size:15px}.hero-stats{margin-top:20px;padding-top:16px}
+  .hero:after{right:-90px;top:30%;width:220px;height:220px}
+  .menu-panel{padding:18px}.menu-panel h3{font-size:22px}.menu-panel p{font-size:15px;margin-bottom:14px}.panel-icon{margin-bottom:14px}
+  /* battle: edge-to-edge board, compact HUD strip, docked actions */
+  .board{margin:0 -8px;width:calc(100% + 16px);max-width:none;padding:3px}
+  .bar{padding:8px 10px;margin-bottom:8px}
+  .tb-side{font-size:15px}.tb-round{font-size:11px;padding:1px 6px}.tb-hint{flex-basis:100%;font-size:13px;line-height:1.35}
+  .actionbar{margin:0 -12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#04070cf2;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid #7fd8ff44;box-shadow:0 -10px 30px #000a}
+  .actionbar .card{background:transparent;border:0;box-shadow:none;padding:0 0 4px;margin:0}
+  .actionbar .abbar{gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  .actionbar .ab{flex:0 0 56px;width:56px;height:56px}
+  .actionbar .bt{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0 0}
+  .actionbar .bt button{min-height:46px;margin:0}
+  .log{height:170px}
+  /* squad builder: the start bar docks to the bottom of the screen */
+  .selection-header{gap:10px;margin:0 0 12px}.selection-header>button{justify-self:start;min-height:40px;padding:8px 14px}
+  .selection-header h2{font-size:28px}.selection-header p{font-size:14px}
+  .pick-toolbar{padding:12px;gap:10px}
+  .selection-actions{position:fixed;left:0;right:0;bottom:0;z-index:40;margin:0;display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#04070cf2;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid #f2b84b55;box-shadow:0 -10px 30px #000a}
+  .selection-actions>button{flex:1 1 40%;min-height:48px;white-space:nowrap;padding:10px 12px}.selection-actions .side-toggle{flex:1 1 100%;display:flex}.selection-actions .side-toggle button{flex:1}
+  body:has(.selection-actions){padding-bottom:150px}
+  .pick-card{padding:12px}.pick-tags{display:none}.pick-card .abbar{margin:10px 0 0}.pick-card .ab{width:46px;height:46px}
+  .pick-portrait{width:60px;height:60px;flex-basis:60px}
+}
+@media(prefers-reduced-motion:reduce){.hero:after{animation:none}}

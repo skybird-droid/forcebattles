@@ -260,6 +260,15 @@ const CP_MISSIONS_D = [
     special:["Luke and Mara fight side by side, so their Battle Bond gives both of them +1d6 Attack.", "In the story Mara wasn't a Skywalker yet. She uses her later card here."],
     opts:[{t:'Luuke is still standing at the end.', c:{alive:['Luuke Skywalker']}}, {t:'Win by the end of Round 6.', c:{rounds:6}}],
     outro:"This time, the clone wins. Luuke Skywalker walks out of the throne room and through a portal to your side."},
+
+  {id:'d_ossus', title:'Brother Against Brother', recruit:['Ulic Qel-Droma'], slots:1, tier:2,
+    lore:'Legends · Tales of the Jedi: The Sith War',
+    premise:"Ulic Qel-Droma, Dark Lord of the Sith and Exar Kun's apprentice, leads the Sith assault on the Jedi library world of Ossus. His brother Cay and Nomi Sunrider stand in his way. In the stories, Ulic struck Cay down and was broken by the guilt.",
+    main:'Defeat Cay Qel-Droma and Nomi Sunrider.',
+    waves:[[{n:'Cay Qel-Droma', hp:10}, {n:'Nomi Sunrider', hp:8}]],
+    special:["If Cay falls to an attack, Brotherly Sacrifice Stuns whoever landed the blow.", "On your side, Cay's fall can't redeem Ulic. Spare him the guilt: let someone else strike Cay down."],
+    opts:[{t:"Ulic doesn't land the final blow on Cay.", c:{notBy:{n:'Ulic Qel-Droma', t:'Cay Qel-Droma'}}}, {t:'Ulic is still standing at the end.', c:{alive:['Ulic Qel-Droma']}}],
+    outro:"Cay falls, but not by his brother's hand. With no blood on his own blade, Ulic Qel-Droma feels no regret, and he steps through the portal to your side."},
 ];
 
 const CP_ECHO_D = {id:'echo', title:'Echoes of the Light Side', slots:4, lore:'World Between Worlds',

@@ -162,3 +162,15 @@ COOLDOWNS (Nov 4)
 DARK CAMPAIGN SIDE LABELS (Nov 4)
 - In the campaign the player is always team 0. sideOf(t) in game.js flips team -> side when cpLive() && CPS=='D', so the turn/win bars and toasts say "Dark Side" for the player in the Dark campaign. Everywhere else sideOf(t) == t.
 - Jedi tag restored (Nov 4): Bastila 'medit' (Old Republic OR Jedi), Satele 'resolve' (Old Republic OR Jedi), GM Luke 'guidance' (New Republic OR Jedi). Card text updated.
+
+QEL-DROMA BROTHERS (Nov 9)
+- Cay Qel-Droma (L): 'cay' passive handled in die() via caySacrifice(u, HITBY). HITBY is set only around the hurt() inside att(), so only attack kills trigger it. Killer is Stunned; an enemy 'Ulic Qel-Droma' switches team, gets a copied u.d with s:'L' and Jedi tag (Sith/Sith Empire/Dark Jedi removed), heals 4. If that empties his old team, Cay's team wins. In the campaign a team-0 (player) Ulic never converts.
+  a_parry = Defensive Stance mechanics (Taunt + 1d6 Def until next turn), cooldown 2.
+- Ulic Qel-Droma (D): 'passion' +1d6 Attack if 2+ adjacent enemies or Exar Kun on his team. a_bstrike = Sith Sorcery Smash mechanics (4d6 adjacent, Stun on 3+ dmg), cooldown 2.
+- Campaign: 'sithwar' now recruits Nomi + Cay vs Exar 16 + Ulic 10 (~71% L1). New Dark 'd_ossus' "Brother Against Brother": Ulic (+1 slot) vs Cay 10 + Nomi 8 (~64% L1, ~78% L2). New opt condition c.notBy {n, t}: t died to a blow not landed by n.
+
+HOLOTABLE UI (Nov 9)
+- New theme layer appended at the end of css/style.css (overrides the older layers above it). Display font: Chakra Petch from Google Fonts (index.html), falls back to system fonts offline.
+- Turn banner markup is now .bar.turnbar > .tb-side / .tb-round / .tb-hint (game.js render()).
+- Phones (<=700px): board is edge to edge, .actionbar is a sticky bottom dock, .selection-actions is a fixed bottom dock (body:has(.selection-actions) adds bottom padding).
+- Gotcha: never use the `background` shorthand on board cells that can hold a unit (.c.U); it resets the portrait's size. Highlight styles use :not(.U).

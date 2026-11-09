@@ -248,6 +248,7 @@ function cpOpt(c){
   if (c.alive) return c.alive.every(n => { const u = mine(n); return u && !u.dead });
   if (c.noLoss) return !G.u.some(u => u.team == 0 && u.dead);
   if (c.finisher) return CPB.deaths.some(d => d.team == 1 && d.n == c.finisher.t && d.by == c.finisher.n);
+  if (c.notBy) return CPB.deaths.some(d => d.team == 1 && d.n == c.notBy.t && d.by != c.notBy.n);
   if (c.noStun) return !CPB.stun;
   if (c.captives) return CPB.freed >= ((CPB.m.rules || {}).captives || {}).n;
   if (c.noHazard) return !CPB.hazHit;
