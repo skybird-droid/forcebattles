@@ -252,14 +252,14 @@ const CP_MISSIONS_D = [
     opts:[{t:'Exar Kun is still standing at the end.', c:{alive:['Exar Kun']}}, {t:'Defeat Nomi by the end of Round 3.', c:{waveBy:{wave:0, round:3}}}],
     outro:'The Jedi of two ages fall before the Lord of the Brotherhood. Exar Kun joins your Sith.'},
 
-  {id:'d_wayland', title:'The Clone', recruit:['Luuke Skywalker'], slots:2, tier:2,
+  {id:'d_wayland', title:'The Clone', recruit:['Luuke Skywalker', "Joruus C'baoth"], slots:1, tier:2,
     lore:'Legends · The Last Command',
-    premise:"Deep inside Mount Tantiss on Wayland, the mad Jedi clone Joruus C'baoth unleashes his masterpiece: Luuke, grown from the hand Luke Skywalker lost at Cloud City. Luke and Mara Jade have come to destroy the cloning facility.",
+    premise:"Deep inside Mount Tantiss on Wayland, the mad Jedi clone Joruus C'baoth unleashes his masterpiece: Luuke, grown from the hand Luke Skywalker lost at Cloud City. Luke and Mara Jade have come to destroy the cloning facility, and C'baoth stands beside his creation in the throne room.",
     main:'Defeat Luke Skywalker and Mara Jade.',
     waves:[[{n:'Luke Skywalker (Jedi Knight)'}, {n:'Mara Jade Skywalker'}]],
-    special:["Luke and Mara fight side by side, so their Battle Bond gives both of them +1d6 Attack.", "In the story Mara wasn't a Skywalker yet. She uses her later card here."],
+    special:["Luuke and Joruus C'baoth both fight beside you, so you bring one warrior of your own.", "Luke and Mara fight side by side, so their Battle Bond gives both of them +1d6 Attack.", "In the story Mara wasn't a Skywalker yet. She uses her later card here."],
     opts:[{t:'Luuke is still standing at the end.', c:{alive:['Luuke Skywalker']}}, {t:'Win by the end of Round 6.', c:{rounds:6}}],
-    outro:"This time, the clone wins. Luuke Skywalker walks out of the throne room and through a portal to your side."},
+    outro:"This time, the clones win. Luuke Skywalker and Joruus C'baoth walk out of the throne room and through a portal to your side."},
 
   {id:'d_ossus', title:'Brother Against Brother', recruit:['Ulic Qel-Droma'], slots:1, tier:2,
     lore:'Legends · Tales of the Jedi: The Sith War',

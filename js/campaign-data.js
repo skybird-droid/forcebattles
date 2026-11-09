@@ -194,14 +194,14 @@ const CP_MISSIONS = [
     opts:[{t:'Kit Fisto survives this time.', c:{alive:['Kit Fisto']}}, {t:'Mace Windu lands the final blow.', c:{finisher:{n:'Mace Windu', t:'Darth Sidious (The Phantom Menace)'}}}],
     outro:"\"You are under arrest, My Lord.\" This time, the arrest holds."},
 
-  {id:'valley', title:'The Valley of the Jedi', recruit:['Kyle Katarn'], slots:2, tier:2,
+  {id:'valley', title:'The Valley of the Jedi', recruit:['Kyle Katarn', 'Kyle Katarn (Battlemaster)'], guests:['Kyle Katarn'], slots:2, tier:2,
     lore:'Thematic matchup · Legends, Jedi Knight',
     premise:"The Valley of the Jedi was born from the war between the Brotherhood of Darkness and the Jedi, the war Darth Bane survived to found the Rule of Two. Kyle Katarn walks the valley and meets its darkest legacy.",
     main:'Defeat Darth Bane.',
     waves:[[{n:'Darth Bane', hp:12}]],
-    special:['A thematic matchup, not a canon duel. Darth Bane has 12 Health. He fights alone, so his Rule of Two bonus never applies.'],
+    special:['A thematic matchup, not a canon duel. Darth Bane has 12 Health. He fights alone, so his Rule of Two bonus never applies.', 'Win to rescue both young Kyle and his older self, Kyle Katarn (Battlemaster). Only young Kyle fights in this battle.'],
     opts:[{t:'Kyle is still standing at the end.', c:{alive:['Kyle Katarn']}}, {t:'Win by the end of Round 6.', c:{rounds:6}}],
-    outro:'The valley is quiet again. Kyle holsters his Bryar pistol and joins you.'},
+    outro:"The valley is quiet again. Kyle holsters his Bryar pistol and joins you. Through the portal behind him steps the man he will become: Kyle Katarn, Jedi Battlemaster of Luke Skywalker's academy."},
 
   {id:'throne', title:'The Throne Room', recruit:['Luke Skywalker (Jedi Knight)'], slots:2, tier:3,
     lore:'Canon · Return of the Jedi',

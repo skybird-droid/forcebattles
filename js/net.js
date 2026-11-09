@@ -1,8 +1,8 @@
 // Online play: room codes over PeerJS (WebRTC), so no game server is needed.
 // Both browsers run the same game code with the same random seed, and every input made by the
 // active player is sent to the other browser, so both boards stay identical.
-const NETVER = '8', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forcebattles-';
-const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','stay','back','resolveRevive','essPass'];
+const NETVER = '10', ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', PEERPFX = 'forcebattles-';
+const INPUTS = ['cell','doAtk','doAb','finish','resolveSplit','resolveQuad','resolveStorm','deselect','stay','back','resolveRevive','essPass','djPick'];
 let NET = null;   // {role:'host'|'guest', peer, conn, code, me:0 (Light) | 1 (Dark), remote, busy, gone}
 const LOBBY = {mode:'menu', phase:'', msg:'', picks:[], ready:false, oppReady:false, oppPicks:null};
 const mine = () => NET ? NET.me != null && ctrl() == NET.me : !aiTurn();
@@ -43,7 +43,7 @@ function ffClick(){
 function netDesync(){ NET.desync = 1; LOBBY.msg = 'The two games went out of sync (different game versions?). Please leave and start a new match.'; render() }
 
 function netLeave(msg){
-  if (NET) { try { NET.peer.destroy() } catch (e) {} }
+  if (NET) { try { NET.peer.destroy() } catch (e) {} if (NET.beacon) { try { NET.beacon.destroy() } catch (e) {} } }
   NET = null; G = null; lobbyReset(); LOBBY.mode = 'menu'; LOBBY.phase = ''; LOBBY.msg = msg || ''; render();
 }
 function netAttach(c){
@@ -185,11 +185,11 @@ function onlineBar(){
   const btns = over ? '<button class="btn-ghost" onclick="netLeave()">Leave room</button>' : `<button class="btn-ghost" onclick="ffClick()">${NET.ff ? 'Click again to forfeit' : 'Forfeit'}</button><button class="btn-ghost" onclick="netLeave()">Leave</button>`;
   return `<div class="card online-bar${!over && !LOBBY.msg && mine() ? ' myturn' : ''}"><span>Room <b>${NET.code}</b> · You are <b>${NET.me ? 'Dark' : 'Light'} Side</b> · ${st}</span><span class="ob-actions">${btns}</span></div>`;
 }
-const cardHtml = (r, i, on, fn) => `<div class="card pick-card ${on?'picked':''}" role="button" tabindex="0" aria-pressed="${on}" onclick="${fn}" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();${fn}}"><div class="pick-card-top"><div class="pick-portrait" style="border-color:var(--${r.s});background-image:${r.img?`url('${r.img}')`:'none'}"></div><div class="pick-details"><b>${esc(r.n)}</b><div class="pick-stats">♥ ${r.h} HP · ⚔ ${r.a}d6 · 🛡 ${r.d}d6${r.cost>1?' · counts as '+r.cost:''}</div><small>${r.t.map(esc).join(' · ')}</small></div><span class="pick-check" aria-hidden="true">${on?'✓':'+'}</span></div><div class="pick-tags">${r.t.slice(0,3).map(tag=>`<span>${esc(tag)}</span>`).join('')}</div>${homeBar(r)}${on?'<div class="selected-caption">SELECTED · CLICK TO REMOVE</div>':''}</div>`;
+const cardHtml = (r, i, on, fn) => `<div class="card pick-card ${on?'picked':''}" role="button" tabindex="0" aria-pressed="${on}" onclick="${fn}" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();${fn}}"><div class="pick-card-top"><div class="pick-portrait" style="border-color:var(--${r.s});background-image:${r.img?`url('${r.img}')`:'none'}"></div><div class="pick-details"><b>${esc(r.n)}</b><div class="pick-stats">♥ ${r.h} HP · ⚔ ${r.a}d6 · 🛡 ${r.d}d6${r.cost>1?' · counts as '+r.cost:''}</div><small>${r.t.map(esc).join(' · ')}</small></div><span class="pick-check" aria-hidden="true">${on?'✓':'+'}</span></div><div class="pick-tags">${tagChips(r)}</div>${homeBar(r)}${on?'<div class="selected-caption">SELECTED · CLICK TO REMOVE</div>':''}</div>`;
 // Main menu mode tiles. Art is picked up automatically: put images/mainmenu/<id>.jpg (or .png / .webp) in place,
 // e.g. images/mainmenu/campaign.jpg. Best size 1280x720 (16:9). Tiles without an image show a placeholder pattern.
 const MENU_MODES = [
-  {id:'lobbies', eyebrow:'Live play', title:'Public Lobbies', desc:'Browse open games and jump into a match with anyone online.', note:'Coming soon', glyph:'◎', soon:true},
+  {id:'lobbies', eyebrow:'Live play', title:'Public Lobbies', desc:'Host a game or jump into an open match with anyone online.', note:'Host or join', glyph:'◎', go:"LOBBY.mode='public';LOBBY.msg='';render()"},
   {id:'online', eyebrow:'Private room', title:'Online Battle', desc:'Create a room or join a friend with a room code.', note:'Room code', glyph:'⇄', go:"LOBBY.mode='online';LOBBY.phase='';LOBBY.msg='';render()"},
   {id:'local', eyebrow:'Local play', title:'Local Skirmish', desc:'Two players take turns on the same device.', note:'No room code', glyph:'⚔', go:"LOBBY.mode='local';render()"},
   {id:'computer', eyebrow:'Solo practice', title:'VS Computer', desc:'Pick a side and a squad, then battle the computer.', note:'Always available', glyph:'◈', go:'aiMenu()'},
@@ -217,13 +217,13 @@ function lobbyScreen(){
       </section>
       <aside class="menu-side">
         ${updatesPanel()}
-        <section class="menu-panel games-panel">
-          <div class="gp-head"><h3>Games in Progress</h3><span class="gp-count">0</span></div>
-          <div class="gp-empty"><b>No public games yet</b><span>Public lobbies are coming soon. For now, create a private room and share the code with a friend.</span></div>
-        </section>
+        ${pubSidebar()}
       </aside>
     </div>
     <p class="menu-footnote">SELECT YOUR CHARACTERS · PLAN YOUR MOVES · MASTER THE FORCE</p>`;
+  } else if (LOBBY.mode == 'public' && !NET) {
+    if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)}</div>`;
+    h += pubScreen();
   } else if (LOBBY.mode == 'online' && !LOBBY.phase) {
     if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)}</div>`;
     h += `<div class="selection-header"><button onclick="LOBBY.mode='menu';render()">← Back to menu</button><div><div class="panel-eyebrow">PLAY WITH A FRIEND</div><h2>Private Room</h2><p>Create a room and send the code to a friend, or enter the code they sent you.</p></div></div>
@@ -241,20 +241,21 @@ function lobbyScreen(){
     </section>`;
   } else if (LOBBY.phase == 'wait') {
     const ok = NET && NET.peer.open;
-    h += `<div class="card"><b>Room code: <span style="font-size:28px;letter-spacing:4px">${ok ? NET.code : '…'}</span></b><br>${ok ? 'Send this code to your opponent. Waiting for them to join…' : 'Creating room…'}<br><br><button onclick="netLeave()">Cancel</button></div>`;
+    h += `<div class="card"><b>Room code: <span style="font-size:28px;letter-spacing:4px">${ok ? NET.code : '…'}</span></b><br>${ok ? (NET.pub ? (NET.pub.full ? 'Every public lobby slot is taken right now, so your game is not listed. A friend can still join with this code.' : NET.pub.slot != null ? `Your game is listed in Public Lobbies as <b>${esc(NET.pub.name)}</b>. Waiting for a challenger… A friend can also join with this code.` : 'Listing your game in Public Lobbies…') : 'Send this code to your opponent. Waiting for them to join…') : 'Creating room…'}<br><br><button onclick="netLeave()">Cancel</button></div>`;
   } else if (LOBBY.phase == 'joining') {
     h += `<div class="card">Connecting to room ${NET ? NET.code : ''}…<br><br><button onclick="netLeave()">Cancel</button></div>`;
   } else if (LOBBY.phase == 'pick') {
     const t = NET.me, side = t ? 'Dark' : 'Light';
     h += `<div class="bar ${t ? 'D' : 'L'}">Room ${NET.code} · You are ${side} Side (picked at random)</div>`;
     if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)} <button onclick="netLeave()">Leave</button></div>`;
-    h += `<div class="selection-header"><div><div class="panel-eyebrow">ONLINE SQUAD BUILDER</div><h2>Choose your champions</h2><p>Pick four ${side} Side characters (Darth Bane counts as three). Click a selected character again to remove them. Your opponent is picking too.</p></div><div class="online-pick-actions"><button onclick="lobbyRandom()" ${LOBBY.ready?'disabled':''}>🎲 Random team</button><button class="btn-primary" ${squadCost(LOBBY.picks) == SQUAD_SIZE && !LOBBY.ready ? '' : 'disabled'} onclick="lobbyReady()">${LOBBY.ready ? 'Ready ✓' : 'Ready · '+squadCost(LOBBY.picks)+'/4'}</button><button onclick="netLeave()">Leave room</button></div></div><div class="pick-toolbar"><label class="pick-search"><span aria-hidden="true">⌕</span><input aria-label="Search characters" placeholder="Search characters or traits…" value="${esc(PICK_SEARCH)}" oninput="setPickSearch(this.value)" ${LOBBY.ready?'disabled':''}></label><label class="pick-filter"><span>FACTION / TRAIT</span><select aria-label="Filter by faction or trait" onchange="setPickFaction(this.value)" ${LOBBY.ready?'disabled':''}><option value="">All factions and traits</option>${[...new Set(R.flatMap(r=>r.t))].sort((a,b)=>a.localeCompare(b)).map(f=>`<option value="${esc(f)}" ${PICK_FACTION===f?'selected':''}>${esc(f)}</option>`).join('')}</select></label><button class="btn-secondary" onclick="PICK_SEARCH='';PICK_FACTION='';render()" ${LOBBY.ready?'disabled':''}>Clear filters</button><span class="online-pick-status">${squadCost(LOBBY.picks)}/4 picked · Opponent: ${LOBBY.oppReady ? 'ready' : 'picking…'}</span></div>${sqStrip(t ? 'D' : 'L', id => `lobbySquad('${id}')`, LOBBY.picks, LOBBY.ready, 'lobbySaveSquad()', squadCost(LOBBY.picks) == SQUAD_SIZE, false)}<div class="pickgrid online-pick-grid">`;
+    h += `<div class="selection-header"><div><div class="panel-eyebrow">ONLINE SQUAD BUILDER</div><h2>Choose your champions</h2><p>Pick four ${side} Side characters (Darth Bane counts as three, Darth Traya as two). Click a selected character again to remove them. Your opponent is picking too.</p></div><div class="online-pick-actions"><button onclick="lobbyRandom()" ${LOBBY.ready?'disabled':''}>🎲 Random team</button><button class="btn-primary" ${squadCost(LOBBY.picks) == SQUAD_SIZE && !LOBBY.ready ? '' : 'disabled'} onclick="lobbyReady()">${LOBBY.ready ? 'Ready ✓' : 'Ready · '+squadCost(LOBBY.picks)+'/4'}</button><button onclick="netLeave()">Leave room</button></div></div><div class="pick-toolbar"><label class="pick-search"><span aria-hidden="true">⌕</span><input aria-label="Search characters" placeholder="Search characters or traits…" value="${esc(PICK_SEARCH)}" oninput="setPickSearch(this.value)" ${LOBBY.ready?'disabled':''}></label><label class="pick-filter"><span>FACTION / TRAIT</span><select aria-label="Filter by faction or trait" onchange="setPickFaction(this.value)" ${LOBBY.ready?'disabled':''}><option value="">All factions and traits</option>${[...new Set(R.flatMap(r=>r.t))].sort((a,b)=>a.localeCompare(b)).map(f=>`<option value="${esc(f)}" ${PICK_FACTION===f?'selected':''}>${esc(f)}</option>`).join('')}</select></label><button class="btn-secondary" onclick="PICK_SEARCH='';PICK_FACTION='';render()" ${LOBBY.ready?'disabled':''}>Clear filters</button><span class="online-pick-status">${squadCost(LOBBY.picks)}/4 picked · Opponent: ${LOBBY.oppReady ? 'ready' : 'picking…'}</span></div>${sqStrip(t ? 'D' : 'L', id => `lobbySquad('${id}')`, LOBBY.picks, LOBBY.ready, 'lobbySaveSquad()', squadCost(LOBBY.picks) == SQUAD_SIZE, false)}${fbPreview(LOBBY.picks)}<div class="pickgrid online-pick-grid">`;
     let shown = 0;
     R.forEach((r, i) => { if (r.s == (t ? 'D' : 'L') && (!PICK_SEARCH || (r.n+' '+r.t.join(' ')).toLowerCase().includes(PICK_SEARCH.toLowerCase())) && (!PICK_FACTION || r.t.includes(PICK_FACTION))) { h += cardHtml(r, i, LOBBY.picks.includes(i), `lpk(${i})`); shown++; } });
     if (!shown) h += '<div class="empty-picks">No characters match these filters.</div>';
     h += '</div>';
   }
   $('#app').innerHTML = h;
+  if (typeof pubWatch == 'function') pubWatch();   // keep the public game list fresh (js/lobby.js)
 }
 // Wrap every input so that it is blocked when it is not your turn, and sent to your opponent when it is.
 function netInit(){

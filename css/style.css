@@ -308,3 +308,38 @@ input,select{border-radius:2px!important;background:#060c14!important;border-col
 .mt-art.has-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,#0a131dcc)}
 .mode-tile.soon .mt-art.has-art .mt-img{filter:grayscale(.6)}
 @media(max-width:620px){.mt-art{aspect-ratio:auto}}
+
+/* ===== PUBLIC LOBBIES (Nov 9) ===== */
+.gp-list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#ffffff08;border:1px solid #ffffff14}
+.gp-row.open{border-color:#5fe0b855}
+.gp-dot{flex:none;width:8px;height:8px;transform:rotate(45deg);background:#8ea0b5}
+.gp-row.open .gp-dot{background:#5fe0b8;box-shadow:0 0 8px #5fe0b8}.gp-row.picking .gp-dot{background:var(--gold)}.gp-row.playing .gp-dot{background:var(--D)}
+.gp-info{display:flex;flex-direction:column;min-width:0;flex:1}
+.gp-info b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e8eef6}
+.gp-info span{font-size:12px;color:#8ea0b5}
+.gp-row .btn-primary{flex:none;padding:6px 16px;min-height:0}
+.gp-tag{flex:none;font:600 11px var(--disp);letter-spacing:.14em;text-transform:uppercase;color:#8ea0b5}
+.gp-more{display:block;width:100%;margin-top:8px;padding:4px;background:none;border:0;color:#9bcfff;font-size:13px;cursor:pointer;clip-path:none}
+.games-panel .btn-wide{margin-top:12px}
+.pub-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px;align-items:start}
+.pub-name{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.pub-name span{font:600 11px var(--disp);letter-spacing:.16em;color:#9bcfff}
+.pub-name input{padding:10px 12px;font-size:16px}
+.pub-games .gp-head .btn-secondary{padding:6px 14px;min-height:0}
+@media(max-width:800px){.pub-layout{grid-template-columns:1fr}}
+
+/* ===== FACTIONS: tag icons and the squad builder's faction bonus hint ===== */
+.pick-tags span{display:inline-flex;align-items:center;gap:4px}
+.fac-ic{width:14px;height:14px;object-fit:contain;flex:0 0 14px}
+.fb-preview{display:flex;gap:12px;align-items:center;padding:10px 12px;margin:0 0 12px;border:1px solid var(--ln);background:#0b1726;font-size:13px;line-height:1.45;color:#c9d8ea}
+.fb-preview>img{width:38px;height:38px;object-fit:contain;flex:0 0 38px}
+.fb-preview .fb-glyph{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;font-size:22px;color:var(--muted)}
+.fb-preview .fb-label{display:block;font-family:var(--disp);font-size:10px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:2px}
+.fb-preview b{color:var(--gold)}
+.fb-preview.on{border-color:var(--gold);box-shadow:0 0 0 1px #f3c66a33 inset}
+.fb-preview.on .fb-label{color:var(--gold)}
+.fb-preview.maybe{border-style:dashed}
+.fb-preview.none{opacity:.8}
+.ab.fac{border-color:var(--gold)}
+.fb-choice .bt{margin-top:8px}

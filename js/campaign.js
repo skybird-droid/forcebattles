@@ -145,7 +145,7 @@ function cpToggle(k){
 
 // ---- building a battle ----
 function cpWaves(m){
-  const foes = R.filter(r => r.s == cpSide().foe && r.cost == 1).map(r => r.n), pool = CP.beaten.filter(n => foes.includes(n));
+  const foes = R.filter(r => r.s == cpSide().foe && r.cost < 3).map(r => r.n), pool = CP.beaten.filter(n => foes.includes(n));
   const pick = (L, used) => { L = L.filter(n => !used.includes(n)); return L[Math.floor(Math.random() * L.length)] };
   const pickEcho = used => pick(pool.some(n => !used.includes(n)) ? pool : foes, used);
   if (m.id == 'echo') { const used = []; for (let i = 0; i < 1 + Math.min(2, Math.floor(cpCleared() / 5)); i++) used.push(pickEcho(used)); return [used.map(n => ({n}))] }

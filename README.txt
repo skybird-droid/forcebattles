@@ -179,3 +179,24 @@ MAIN MENU TILES + IMAGES FOLDER (Nov 9)
 - Portraits and icons moved to images/portraits/ and images/icons/; every path in characters.js, campaign-data.js, campaign-dark.js and iconSrc() in game.js points there.
 - The main menu is a grid of mode tiles (MENU_MODES in net.js) plus a sidebar (Updates + Games in Progress placeholder). Tile art loads automatically from images/mainmenu/<id>.jpg, then .png, then .webp: lobbies, online, local, computer, campaign, squads. Best size 1280x720 (16:9), subject centred (phones crop to a narrow strip).
 - Public Lobbies is a disabled "Coming soon" tile. Online Battle opens LOBBY.mode='online' with phase '' (the create/join screen); netHost/netJoin take it from there.
+
+PUBLIC LOBBIES (Nov 9) - js/lobby.js
+- No server of our own: a public host keeps its normal room (PeerJS id forcebattles-<CODE>) and also claims a beacon id forcebattles-pub<NETVER>-<0..15>. The lobby list connects to all 16 beacon ids; each live beacon replies {t:'pub', v, code, name, status:'open'|'picking'|'playing', round} and hangs up. Join = netJoin(code), so all room/resume logic is shared.
+- NETVER is part of the beacon id, so bump NETVER whenever gameplay or characters change (now '10'); old and new versions never list each other.
+- Scanning runs only while the main menu or Public Lobbies screen is open (every 20s / 10s) and only updates #gp-list / #pub-list, never a full render, so typing a name isn't interrupted.
+- Beacon replies come from other browsers: pubClean() validates code/name/status before anything is shown.
+
+JORUUS C'BAOTH + KYLE KATARN (BATTLEMASTER) (Nov 9)
+- Joruus: 'cmad' in hurt() (adjacent enemies take 1 unblockable, guarded against loops by u.cmadOn); a_cbaoth = 3d6 range 2 with stun-on-damage, then G.mode='amove' on the ENEMY target with reach(t,1,1). ai.js handles an enemy G.mv by dropping it next to its own units.
+- Kyle (Battlemaster): 'instr' in aDice (+1d6 for New Republic/Jedi allies within 2, not himself); a_bmcmd picks an NR/Jedi ally within 2 that can attack (bmTg: not Stunned / nopatk), then that ally makes a fixed 3d6 attack.
+- Campaign: d_wayland recruits Luuke + Joruus (both fight as guests, slots 1). valley recruits Kyle + Kyle (Battlemaster) with guests:['Kyle Katarn'], so only young Kyle fights.
+
+FACTION OVERHAUL (Nov 9) - js/factions.js (loaded right after characters.js)
+- FACTIONS lists every faction with its tier (origin / broad / main / sub), icon (images/icons/factionicons/<icon>.png) and 4-unit bonus. Tags on every card are sorted at load: Origins, Broad (Jedi/Sith/Dark Jedi), Main, Sub. New factions just need a FACTIONS row.
+- Force-Sensitive removed; Grievous is Non-Force Sensitive (origin). Sith Eternal removed (Emperor is Clone + Sith). Kylo Ren is First Order only. Luuke/Joruus: Imperial Remnant (sub) replaces Imperial. Barriss Offee (Fallen) is Dark Jedi.
+- squadBonus(): a full squad (cost 4) whose members ALL share a faction; searched Sub > Main > Broad > Origin (FB_ORDER). start() stores it in G.fb[team] (campaign battles never call start(), so they have no bonus). fbk(team) = bonus key; fbU(u,key) = the unit's faction passive (off while Severed).
+- Hooks: aDice/dDice (inq, or, sep, fo, merc bounty, sith + u.rage, dj, gr, jedi, salv, spark, st.cmd, st.dd), tf() (jedi ignores Taunt), stun() (nfs), hurt() (res spark, triv drain while G.abKey is set), fbDie() from die() (remnant, sith rage, clone respawn queue), fbRound() at round start (clone respawns at u.home, nr heal + cleanse), abCd(key,u) (imp), att() (onesith st.cmd, sithemp st.dd), doAtk (rebel Hit and Run via amove, once per round in G.hr), finish() (night respite after an Action).
+- Dark Jedi: djPick('a'|'d') is a network INPUT; prompt shows on that side's turn until chosen each round (last choice carries over). AI picks Defense below half Health.
+- Mercenary: the enemy with the most Health is marked automatically at the start (G.bounty).
+- Darth Traya: cost 2 (SQUAD_COST). e_lsabers spawns 3 LSABER tokens (d.token, 2 HP, 2d6, 0d6, mv 2, owner = Traya's id) next to her; used=1 so they act next round. Tokens never go into G.dead (no revive), can't be Essence hosts, and dropTokens() kills them when Traya dies. reach() defaults to u.d.mv||4.
+- Squad builders (local, online, saved squads) show fbPreview(); battle shows the bonus as a third passive (cls 'pas fac').

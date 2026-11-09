@@ -43,6 +43,8 @@ const AI_EPV = {
   e_66: (u, t) => 1 + Math.max(0, ...al(t).filter(v => dist(t, v) <= 1).map(v => { const h = aiHit(t, v, t.d.a); return h.ed + h.kill * aiWorth(v) })),
   e_barrier: (u, t) => [u, t].filter(v => en(v).some(e => dist(e, v) <= 2)).length * 2.2,
   e_orb: u => 1 + en(u).filter(e => dist(e, u) <= 2).length * 1.5 + (u.hp <= u.d.h / 2 ? 2 : 0),
+  a_bmcmd: (u, v) => Math.max(0, ...bmTg(v).map(t => aiAtkScore(v, t, 3, ''))),   // the commanded ally's free 3d6 Attack
+  e_lsabers: u => Math.min(3, 64 - live().length) * 2 + (en(u).some(e => dist(e, u) <= 3) ? 1 : 0),   // three 2d6 tokens
   e_oneforce: u => live(u.team).reduce((x, v) => x + (v === u ? 0 : v.st.stun ? 2.5 : v.used ? 0 : 1.2), 0),
 };
 // best value and target of one Action/Epic ability, or null
@@ -53,8 +55,8 @@ function aiAbValue(u, a, A, T){
   if (key == 'e_transfer') { const L = fallen(u); if (L.length) pick(u, 4 + Math.max(...L.map(v => v.d.a))) }
   else if (key == 'e_purrgil') T.forEach(t => pick(t, 1 + t.hp + t.d.a - u.hp));
   else if (key == 'e_rage' || key == 'e_flurry') T.forEach(t => pick(t, 1.8 * aiAtkScore(u, t, aDice(u, t) + (key == 'e_flurry' ? 1 : 0), desc)));
-  else if (key == 'e_saberstorm' || key == 'e_surge') {
-    const sc = foes.map(t => ({t, s:aiAtkScore(u, t, 3, desc)})).sort((x, y) => y.s - x.s), top = sc.slice(0, key == 'e_surge' ? 2 : 3);
+  else if (key == 'e_surge') {
+    const sc = foes.map(t => ({t, s:aiAtkScore(u, t, 3, desc)})).sort((x, y) => y.s - x.s), top = sc.slice(0, 2);
     if (top.length) pick(top[0].t, top.reduce((x, y) => x + y.s, 0));
   }
   else if (AI_EPV[key]) T.forEach(t => pick(t, AI_EPV[key](u, t)));
@@ -100,7 +102,7 @@ function aiPos(u){
 }
 // try every square u can reach and keep the best spot and action
 function aiPlan(u){
-  const ox = u.x, oy = u.y, sq = reach(u, 4, (k(u, 'rgm') && !u.rgu) || k(u, 'assassin'));
+  const ox = u.x, oy = u.y, sq = reach(u, u.d.mv || 4, (k(u, 'rgm') && !u.rgu) || k(u, 'assassin'));
   let best = null;
   try {
     sq.forEach(q => {
@@ -134,6 +136,10 @@ function aiAct(){
     return e ? cell(e.x, e.y) : essPass();
   }
   if (!s) {
+    if (fbk(AI.side) == 'dj' && G.djR[AI.side] != G.round) {   // Unpredictable Power: defend when the squad is badly hurt
+      const L = live(AI.side), hp = L.reduce((x, v) => x + v.hp / v.d.h, 0) / (L.length || 1);
+      return djPick(hp < .5 ? 'd' : 'a');
+    }
     let best = null;
     live(AI.side).filter(u => !u.used && !u.st.stun).forEach(u => { const p = aiPlan(u); if (p && (!best || p.score > best.score)) best = p });
     if (!best) return;
@@ -169,7 +175,13 @@ function aiAct(){
   if (G.mode == 'rev') { const v = fallen(s).sort((a, b) => b.d.a - a.d.a)[0]; return v ? resolveRevive(v.id) : back() }
   if (G.mode == 'revspot') { const p = aiSafeSpot(null, s); return p ? cell(p.x, p.y) : back() }
   if (G.mode == 'amove') {
-    const m = G.mv; if (!en(m).some(v => dist(m, v) <= 1)) return finish();
+    const m = G.mv;
+    if (m.team != s.team) {   // an enemy moved by Force Lightning & Control: drop it next to as many of our units as possible
+      let bx = m.x, by = m.y, bs = -1;
+      G.reach.forEach(q => { const [x, y] = q.split(',').map(Number), sc = al(s).concat(s).filter(v => Math.max(Math.abs(v.x - x), Math.abs(v.y - y)) <= 1).length; if (sc > bs) { bs = sc; bx = x; by = y } });
+      return cell(bx, by);
+    }
+    if (!en(m).some(v => dist(m, v) <= 1)) return finish();
     const p = aiSafeSpot(m, m); return p ? cell(p.x, p.y) : finish();
   }
   return finish();
