@@ -277,7 +277,7 @@ const CP_ECHO_D = {id:'echo', title:'Echoes of the Light Side', slots:4, lore:'W
   opts:[{t:'None of your characters falls.', c:{noLoss:true}}]};
 
 // The Dark Side final boss. Campaign-only: she is never added to the multiplayer roster.
-const CP_DAUGHTER_IMG = 'portraits/thedaughter.png';
+const CP_DAUGHTER_IMG = 'images/portraits/thedaughter.png';
 Object.assign(ABICON, {'The Daughter|Light of Mortis':'defup', 'The Daughter|Mortis Wave':'stun', 'The Daughter|Blinding Radiance':'atkdown'});
 const CP_DAUGHTER = {n:'The Daughter', s:'L', t:['Mortis', 'Light Side'], h:22, a:4, d:3, img:CP_DAUGHTER_IMG, cost:1,
   k:['size', 'a_pushstun', 'e_precog'],

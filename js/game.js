@@ -197,7 +197,7 @@ out.forEach(a=>{if(a.type=='Action')a.key=ak[ai++];else if(a.type=='Epic')a.key=
 R.forEach(parseAbs);
 let TIPS=[];
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'),slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-const iconSrc=n=>(typeof ICON_DATA!=='undefined'&&ICON_DATA[n])||'icons/'+encodeURIComponent(n)+'.png';
+const iconSrc=n=>(typeof ICON_DATA!=='undefined'&&ICON_DATA[n])||'images/icons/'+encodeURIComponent(n)+'.png';
 const CATICON={multi:'doubleorextraattack',taunt:'taunt',stun:'stun',heal:'healing',atkup:'+1d6',atkdown:'-1d6',defup:'+1d6def',defdown:'-1d6def',move:'movement',o66:'order66'};
 const sideIc=r=>r.s=='D'?'darkside':'lightside';
 function abIcon(r,a){const c=ABICON[(a.src||r.n)+'|'+a.name];return c=='attack'?'attack-'+sideIc(r):(CATICON[c]||sideIc(r))}

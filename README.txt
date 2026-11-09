@@ -5,7 +5,7 @@ Files
 - css/style.css: visual styling
 - js/characters.js: character roster and portrait file paths
 - js/game.js: game state, rules, abilities, and interface rendering
-- portraits/: extracted character portraits
+- images/portraits/: character portraits; images/icons/: ability icons; images/mainmenu/: main menu tile art
 
 How to run
 1. Keep the folder structure intact.
@@ -174,3 +174,8 @@ HOLOTABLE UI (Nov 9)
 - Turn banner markup is now .bar.turnbar > .tb-side / .tb-round / .tb-hint (game.js render()).
 - Phones (<=700px): board is edge to edge, .actionbar is a sticky bottom dock, .selection-actions is a fixed bottom dock (body:has(.selection-actions) adds bottom padding).
 - Gotcha: never use the `background` shorthand on board cells that can hold a unit (.c.U); it resets the portrait's size. Highlight styles use :not(.U).
+
+MAIN MENU TILES + IMAGES FOLDER (Nov 9)
+- Portraits and icons moved to images/portraits/ and images/icons/; every path in characters.js, campaign-data.js, campaign-dark.js and iconSrc() in game.js points there.
+- The main menu is a grid of mode tiles (MENU_MODES in net.js) plus a sidebar (Updates + Games in Progress placeholder). Tile art loads automatically from images/mainmenu/<id>.jpg, then .png, then .webp: lobbies, online, local, computer, campaign, squads. Best size 1280x720 (16:9), subject centred (phones crop to a narrow strip).
+- Public Lobbies is a disabled "Coming soon" tile. Online Battle opens LOBBY.mode='online' with phase '' (the create/join screen); netHost/netJoin take it from there.

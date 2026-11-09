@@ -14,7 +14,7 @@ A browser-based Star Wars-inspired tactical battle game with local pass-and-play
 
 ## Important
 
-- Keep the folder structure intact: `css/`, `js/`, `portraits/`, and `icons/` must stay alongside `index.html`.
+- Keep the folder structure intact: `css/`, `js/` and `images/` (with `images/portraits/`, `images/icons/` and `images/mainmenu/`) must stay alongside `index.html`.
 - GitHub Pages is static hosting. Online play currently uses PeerJS and its public matchmaking server; it does not require a custom Node.js server.
 - Peer-to-peer connections may fail on some restrictive networks or firewalls. A self-hosted PeerServer or relay infrastructure may be needed for more reliable connectivity.
 - Both players must load the same deployed game version. If the rules or network protocol change, update `NETVER` in `js/net.js` when appropriate.

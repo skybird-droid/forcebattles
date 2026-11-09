@@ -4,6 +4,8 @@
 const UPDATES = [
   {date:'Nov 9, 2026', title:'The Qel-Droma Brothers and a New Look', items:[
     'New holotable look: a glowing tactical grid board, war-room panels, sharper buttons and a new title font.',
+    'New main menu: every mode now has its own tile (Online Battle, Local Skirmish, VS Computer, Campaign and Saved Squads), with Updates and Games in Progress on the side.',
+    'Public Lobbies are coming soon. Online Battle now opens its own screen where you create a room or join one with a code.',
     'Better on phones: the board fills the screen width, the turn banner is shorter, your unit\'s actions dock to the bottom of the screen, and Start battle stays docked at the bottom while you pick your squad.',
     'New Light Side: Cay Qel-Droma. New Dark Side: Ulic Qel-Droma. 74 characters are now available.',
     "Cay's Brotherly Sacrifice: when an enemy attack defeats him, his killer is Stunned, and an enemy Ulic is redeemed. Ulic turns to the Light Side, joins Cay's team as a Jedi and heals 4.",

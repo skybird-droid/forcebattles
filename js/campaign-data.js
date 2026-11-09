@@ -287,7 +287,7 @@ const CP_ECHO = {id:'echo', title:'Echoes of the Dark Side', slots:4, lore:'Worl
   opts:[{t:'None of your characters falls.', c:{noLoss:true}}]};
 
 // The Light Side final boss. Campaign-only: he is never added to the multiplayer roster.
-const CP_SON_IMG = 'portraits/theson.png';
+const CP_SON_IMG = 'images/portraits/theson.png';
 // ability icons for the Son (categories from js/characters.js ABICON)
 Object.assign(ABICON, {'The Son|Shadow of Mortis':'atkdown', 'The Son|Mortis Lightning':'multi', 'The Son|Wrath of the Son':'stun', 'World Between Worlds|Portal Vet':'atkup'});
 const CP_SON = {n:'The Son', s:'D', t:['Mortis', 'Dark Side'], h:22, a:4, d:3, img:CP_SON_IMG, cost:1,

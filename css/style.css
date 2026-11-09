@@ -255,3 +255,56 @@ input,select{border-radius:2px!important;background:#060c14!important;border-col
   .pick-portrait{width:60px;height:60px;flex-basis:60px}
 }
 @media(prefers-reduced-motion:reduce){.hero:after{animation:none}}
+
+/* ===== MAIN MENU MODE TILES (Nov 9) ===== */
+.menu-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.mode-kicker{display:flex;align-items:center;gap:8px;margin:0 0 12px;font:600 12px var(--disp);letter-spacing:.18em;color:#9bcfff}
+.mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.mode-tile{--acc:var(--holo);position:relative;display:flex;flex-direction:column;min-width:0;cursor:pointer;
+  border:1px solid #2a4258;background:linear-gradient(170deg,#132232f0,#0a131df0);box-shadow:0 10px 26px #0007;
+  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
+  transition:transform .15s,border-color .15s,box-shadow .15s}
+.mode-tile:hover,.mode-tile:focus-visible{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 14px 30px #000a,0 0 0 1px var(--acc) inset;outline:none}
+.mode-tile.soon{cursor:default;opacity:.72}.mode-tile.soon:hover{transform:none;border-color:#2a4258;box-shadow:0 10px 26px #0007}
+.mt-lobbies{--acc:#ff7a9a}.mt-online{--acc:#7fd8ff}.mt-local{--acc:#f2b84b}.mt-computer{--acc:#5fe0b8}.mt-campaign{--acc:#c39bff}.mt-squads{--acc:#9fb4ff}
+.mt-art{position:relative;height:150px;overflow:hidden;background-size:cover;background-position:center;border-bottom:1px solid #2a4258;
+  background-image:linear-gradient(180deg,transparent 40%,#0a131d),repeating-linear-gradient(0deg,#ffffff07 0 1px,transparent 1px 22px),repeating-linear-gradient(90deg,#ffffff07 0 1px,transparent 1px 22px),radial-gradient(ellipse at 70% 30%,color-mix(in srgb,var(--acc) 35%,transparent),transparent 65%),linear-gradient(135deg,#0c1824,#16273a)}
+
+.mt-glyph{position:absolute;right:18px;top:50%;transform:translateY(-55%);font-size:64px;line-height:1;color:var(--acc);opacity:.55;text-shadow:0 0 24px var(--acc)}
+.mt-body{display:flex;flex-direction:column;flex:1;padding:16px 18px 14px}
+.mt-eyebrow{font:600 11px var(--disp);letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+.mt-title{margin:4px 0 6px;font:700 24px/1.05 var(--disp);text-transform:uppercase;letter-spacing:.02em;color:#f2f6fb}
+.mode-tile p{flex:1;margin:0 0 14px;font-size:14px;line-height:1.45;color:#a9b8ca}
+.mt-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:12px;border-top:1px solid #ffffff14}
+.mt-note{display:flex;align-items:center;gap:6px;font-size:12px;color:#8ea0b5;min-width:0}
+.mt-note i{flex:none;width:7px;height:7px;background:var(--acc);transform:rotate(45deg)}
+.mt-enter{flex:none;font:700 13px var(--disp);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.mode-tile.soon .mt-enter{color:#8ea0b5}
+.menu-side{display:flex;flex-direction:column;gap:14px;min-width:0;margin-top:27px}
+.menu-side .updates-panel{margin-top:0;max-height:430px;overflow:auto}
+.menu-side .updates-panel h3{margin-top:4px}
+.games-panel .gp-head{display:flex;align-items:center;justify-content:space-between}
+.games-panel h3{margin:0}
+.gp-count{min-width:26px;padding:2px 8px;text-align:center;font:700 13px var(--disp);background:#ffffff14;border:1px solid #ffffff22}
+.gp-empty{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding:22px 10px;text-align:center;border-top:1px solid #ffffff14}
+.gp-empty b{color:#e8eef6}.gp-empty span{font-size:13px;color:#8ea0b5}
+@media(max-width:1000px){.menu-layout{grid-template-columns:1fr}.menu-side{margin-top:0}.menu-side .updates-panel{max-height:none}.mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){
+  .mode-grid{grid-template-columns:1fr;gap:10px}
+  .mode-tile{flex-direction:row;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+  .mode-tile:hover{transform:none}
+  .mt-art{flex:none;width:96px;height:auto;border-bottom:0;border-right:1px solid #2a4258}
+  .mt-glyph{right:50%;transform:translate(50%,-50%);font-size:40px}
+  .mt-body{padding:12px 14px 10px}.mt-title{font-size:19px}.mode-tile p{font-size:13px;margin-bottom:10px}
+  .mt-foot{padding-top:8px}
+}
+.menu-side .menu-panel{padding:18px 20px}
+.menu-side .panel-icon{display:none}
+.menu-side h3{font-size:22px}
+.menu-side .upd-head b{font-size:15px}.menu-side .updates-panel li{font-size:14px;line-height:1.5}
+.mt-art{height:auto;aspect-ratio:16/9}
+.mt-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0}
+.mt-art.has-art .mt-img{opacity:1}.mt-art.has-art .mt-glyph{display:none}
+.mt-art.has-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,#0a131dcc)}
+.mode-tile.soon .mt-art.has-art .mt-img{filter:grayscale(.6)}
+@media(max-width:620px){.mt-art{aspect-ratio:auto}}

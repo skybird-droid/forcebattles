@@ -186,48 +186,59 @@ function onlineBar(){
   return `<div class="card online-bar${!over && !LOBBY.msg && mine() ? ' myturn' : ''}"><span>Room <b>${NET.code}</b> · You are <b>${NET.me ? 'Dark' : 'Light'} Side</b> · ${st}</span><span class="ob-actions">${btns}</span></div>`;
 }
 const cardHtml = (r, i, on, fn) => `<div class="card pick-card ${on?'picked':''}" role="button" tabindex="0" aria-pressed="${on}" onclick="${fn}" onkeydown="if(event.target===event.currentTarget&&(event.key==='Enter'||event.key===' ')){event.preventDefault();${fn}}"><div class="pick-card-top"><div class="pick-portrait" style="border-color:var(--${r.s});background-image:${r.img?`url('${r.img}')`:'none'}"></div><div class="pick-details"><b>${esc(r.n)}</b><div class="pick-stats">♥ ${r.h} HP · ⚔ ${r.a}d6 · 🛡 ${r.d}d6${r.cost>1?' · counts as '+r.cost:''}</div><small>${r.t.map(esc).join(' · ')}</small></div><span class="pick-check" aria-hidden="true">${on?'✓':'+'}</span></div><div class="pick-tags">${r.t.slice(0,3).map(tag=>`<span>${esc(tag)}</span>`).join('')}</div>${homeBar(r)}${on?'<div class="selected-caption">SELECTED · CLICK TO REMOVE</div>':''}</div>`;
+// Main menu mode tiles. Art is picked up automatically: put images/mainmenu/<id>.jpg (or .png / .webp) in place,
+// e.g. images/mainmenu/campaign.jpg. Best size 1280x720 (16:9). Tiles without an image show a placeholder pattern.
+const MENU_MODES = [
+  {id:'lobbies', eyebrow:'Live play', title:'Public Lobbies', desc:'Browse open games and jump into a match with anyone online.', note:'Coming soon', glyph:'◎', soon:true},
+  {id:'online', eyebrow:'Private room', title:'Online Battle', desc:'Create a room or join a friend with a room code.', note:'Room code', glyph:'⇄', go:"LOBBY.mode='online';LOBBY.phase='';LOBBY.msg='';render()"},
+  {id:'local', eyebrow:'Local play', title:'Local Skirmish', desc:'Two players take turns on the same device.', note:'No room code', glyph:'⚔', go:"LOBBY.mode='local';render()"},
+  {id:'computer', eyebrow:'Solo practice', title:'VS Computer', desc:'Pick a side and a squad, then battle the computer.', note:'Always available', glyph:'◈', go:'aiMenu()'},
+  {id:'campaign', eyebrow:'Single player', title:'Campaign', desc:'The World Between Worlds: relive iconic duels and recruit heroes or Sith.', note:'Light and Dark paths', glyph:'✧', go:'cpOpen()'},
+  {id:'squads', eyebrow:'Squad builder', title:'Saved Squads', desc:'Build squads once, then load them in a click before a battle.', note:() => `${sqList().length} saved`, glyph:'★', go:"LOBBY.mode='squads';render()"},
+];
+function modeTile(m){
+  const note = typeof m.note == 'function' ? m.note() : m.note;
+  const act = m.soon ? 'aria-disabled="true"' : `role="button" tabindex="0" onclick="${m.go}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${m.go}}"`;
+  return `<div class="mode-tile mt-${m.id}${m.soon ? ' soon' : ''}" ${act}>
+      <div class="mt-art"><span class="mt-glyph" aria-hidden="true">${m.glyph}</span><img class="mt-img" src="images/mainmenu/${m.id}.jpg" alt="" onload="this.parentNode.classList.add('has-art')" onerror="const e=['png','webp'],i=e.findIndex(x=>this.src.endsWith('.'+x));if(i<e.length-1)this.src=this.src.slice(0,this.src.lastIndexOf('.'))+'.'+e[i+1];else this.remove()"></div>
+      <div class="mt-body"><div class="mt-eyebrow">${m.eyebrow}</div><h3 class="mt-title">${m.title}</h3><p>${m.desc}</p>
+      <div class="mt-foot"><span class="mt-note"><i></i>${esc(note)}</span><span class="mt-enter">${m.soon ? 'Soon' : 'Enter <span aria-hidden="true">→</span>'}</span></div></div>
+    </div>`;
+}
 function lobbyScreen(){
   let h = '';
   if (LOBBY.mode == 'menu') {
     if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)}</div>`;
     h += resumeCard();
-    h += `<section class="hero">
-      <div class="hero-kicker"><span class="status-dot"></span> TACTICAL DUEL · 2 PLAYERS</div>
-      <h2>Choose your side.<br><span>Change the galaxy.</span></h2>
-      <p class="hero-copy">Build a squad of four legendary warriors and outthink your opponent in a turn-based Star Wars-inspired duel.</p>
-      <div class="hero-stats"><div><strong>4v4</strong><span>SQUAD BATTLES</span></div><div><strong>d6</strong><span>DICE COMBAT</span></div><div><strong>1v1</strong><span>ONLINE DUELS</span></div></div>
-    </section>
-    <section class="menu-panel camp-panel">
-      <div class="panel-icon">✧</div><div class="panel-eyebrow">SINGLE PLAYER CAMPAIGN</div>
-      <h3>World Between Worlds</h3><p>Explore a randomized realm of portals and relive iconic duels. Rescue Jedi and face the Son, or gather the Sith and face the Daughter.</p>
-      <button class="btn-primary btn-wide" onclick="cpOpen()">Enter the World Between Worlds <span aria-hidden="true">→</span></button>
-    </section>
+    h += `<div class="menu-layout">
+      <section class="mode-area" aria-label="Game modes">
+        <div class="mode-kicker"><span class="status-dot"></span> CHOOSE YOUR BATTLE</div>
+        <div class="mode-grid">${MENU_MODES.map(modeTile).join('')}</div>
+      </section>
+      <aside class="menu-side">
+        ${updatesPanel()}
+        <section class="menu-panel games-panel">
+          <div class="gp-head"><h3>Games in Progress</h3><span class="gp-count">0</span></div>
+          <div class="gp-empty"><b>No public games yet</b><span>Public lobbies are coming soon. For now, create a private room and share the code with a friend.</span></div>
+        </section>
+      </aside>
+    </div>
+    <p class="menu-footnote">SELECT YOUR CHARACTERS · PLAN YOUR MOVES · MASTER THE FORCE</p>`;
+  } else if (LOBBY.mode == 'online' && !LOBBY.phase) {
+    if (LOBBY.msg) h += `<div class="card err">${esc(LOBBY.msg)}</div>`;
+    h += `<div class="selection-header"><button onclick="LOBBY.mode='menu';render()">← Back to menu</button><div><div class="panel-eyebrow">PLAY WITH A FRIEND</div><h2>Private Room</h2><p>Create a room and send the code to a friend, or enter the code they sent you.</p></div></div>
     <section class="menu-grid">
       <div class="menu-panel online-panel">
-        <div class="panel-icon">⌁</div><div class="panel-eyebrow">PLAY WITH A FRIEND</div>
-        <h3>Online Battle</h3><p>Create a private room or join a friend's match with a room code.</p>
+        <div class="panel-icon">＋</div><div class="panel-eyebrow">HOST</div>
+        <h3>Create a room</h3><p>You'll get a 5-letter code to share. The match starts when your friend joins.</p>
         <button class="btn-primary btn-wide" onclick="netHost()">＋ Create room</button>
-        <div class="join-row"><label for="joinCode">HAVE A ROOM CODE?</label><div class="join-controls"><input id="joinCode" maxlength="5" placeholder="ABCDE" aria-label="Room code" autocomplete="off" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"> <button class="btn-secondary" onclick="netJoin(document.getElementById('joinCode').value)">Join room <span aria-hidden="true">→</span></button></div></div>
       </div>
       <div class="menu-panel local-panel">
-        <div class="panel-icon">⚔</div><div class="panel-eyebrow">ONE DEVICE · TWO PLAYERS</div>
-        <h3>Local Skirmish</h3><p>Take turns on the same device. Perfect for learning the rules or playing side by side.</p>
-        <button class="btn-secondary btn-wide" onclick="LOBBY.mode='local';render()">Play locally <span aria-hidden="true">→</span></button>
-        <div class="mode-note"><span class="mode-dot"></span> No room code required</div>
+        <div class="panel-icon">⇄</div><div class="panel-eyebrow">JOIN</div>
+        <h3>Have a room code?</h3><p>Enter the code your friend sent you.</p>
+        <div class="join-row"><label for="joinCode">ROOM CODE</label><div class="join-controls"><input id="joinCode" maxlength="5" placeholder="ABCDE" aria-label="Room code" autocomplete="off" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" onkeydown="if(event.key==='Enter')netJoin(this.value)"> <button class="btn-secondary" onclick="netJoin(document.getElementById('joinCode').value)">Join room <span aria-hidden="true">→</span></button></div></div>
       </div>
-    </section>
-    <section class="menu-panel ai-panel">
-      <div class="panel-icon">◈</div><div class="panel-eyebrow">SOLO · YOU AGAINST THE COMPUTER</div>
-      <h3>VS Computer</h3><p>Pick a side and a squad, then battle a computer opponent that plays the other side.</p>
-      <button class="btn-secondary btn-wide" onclick="aiMenu()">Play vs computer <span aria-hidden="true">→</span></button>
-    </section>
-    <section class="menu-panel squads-panel">
-      <div class="panel-icon">★</div><div class="panel-eyebrow">YOUR SQUADS · SAVED IN THIS BROWSER</div>
-      <h3>Saved Squads</h3><p>Build a squad once, then load it in a click for local and online battles.</p>
-      <button class="btn-secondary btn-wide" onclick="LOBBY.mode='squads';render()">Manage squads (${sqList().length}) <span aria-hidden="true">→</span></button>
-    </section>
-    ${updatesPanel()}
-    <p class="menu-footnote">SELECT YOUR CHARACTERS · PLAN YOUR MOVES · MASTER THE FORCE</p>`;
+    </section>`;
   } else if (LOBBY.phase == 'wait') {
     const ok = NET && NET.peer.open;
     h += `<div class="card"><b>Room code: <span style="font-size:28px;letter-spacing:4px">${ok ? NET.code : '…'}</span></b><br>${ok ? 'Send this code to your opponent. Waiting for them to join…' : 'Creating room…'}<br><br><button onclick="netLeave()">Cancel</button></div>`;
