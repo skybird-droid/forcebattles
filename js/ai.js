@@ -27,7 +27,7 @@ const aiWorth = t => 2 + t.d.a + ((t.d.cost || 1) > 1 ? 3 : 0);
 function aiHit(u, t, n){
   if (t.st.orb) return {ed:0, hit:0, kill:0};
   const dd = dDice(t, u), m = 3.5 * (n - dd), sd = Math.sqrt(2.92 * (n + dd)) || 1, z = m / sd;
-  return {ed:Math.min(t.hp, Math.max(0, sd * aiPdf(z) + m * aiCdf(z))), hit:1 - aiCdf((.5 - m) / sd), kill:1 - aiCdf((t.hp - .5 - m) / sd)};
+  return {ed:Math.min(t.hp - (trayaSafe(t) ? 1 : 0), Math.max(0, sd * aiPdf(z) + m * aiCdf(z))), hit:1 - aiCdf((.5 - m) / sd), kill:trayaSafe(t) ? 0 : 1 - aiCdf((t.hp - .5 - m) / sd)};
 }
 function aiAtkScore(u, t, n, desc){
   if (t.team == u.team) return -aiHit(u, t, n).ed * 2;
@@ -44,7 +44,6 @@ const AI_EPV = {
   e_barrier: (u, t) => [u, t].filter(v => en(v).some(e => dist(e, v) <= 2)).length * 2.2,
   e_orb: u => 1 + en(u).filter(e => dist(e, u) <= 2).length * 1.5 + (u.hp <= u.d.h / 2 ? 2 : 0),
   a_bmcmd: (u, v) => Math.max(0, ...bmTg(v).map(t => aiAtkScore(v, t, 3, ''))),   // the commanded ally's free 3d6 Attack
-  e_lsabers: u => Math.min(3, 64 - live().length) * 2 + (en(u).some(e => dist(e, u) <= 3) ? 1 : 0),   // three 2d6 tokens
   e_oneforce: u => live(u.team).reduce((x, v) => x + (v === u ? 0 : v.st.stun ? 2.5 : v.used ? 0 : 1.2), 0),
 };
 // best value and target of one Action/Epic ability, or null

@@ -33,6 +33,7 @@ function heal(u,n){const b=u.hp;u.hp=Math.min(u.d.h,u.hp+n);if(u.hp>b)uxFx('heal
 const debuff=(t,key,v=1)=>{if(k(t,'immune')||t.st.orb){log(`${t.d.n} is immune`);return}t.st[key]=v};
 function stun(u){if(fbU(u,'nfs')){log(`${u.d.n} is immune to Stun (Anti-Force)`);uxFx('resist',u);return}if(k(u,'immune')||k(u,'binary')||u.st.orb){log(`${u.d.n} is immune to Stun`);uxFx('resist',u);return}if(k(u,'e_iaj')&&!u.ep){u.ep=1;u.st.fort=1;log(`🛡 ${u.d.n}: I Am a Jedi! Stun negated`);uxFx('resist',u);return}if(k(u,'absorb')){u.st.absorb=1;log(`🛡 ${u.d.n}: Force Absorb! Stun negated, +1d6 Defense until his next turn`);uxFx('resist',u);return}if(k(u,'e_jedi')&&!u.ep){u.ep=1;u.st.allj=1;log(`✨ ${u.d.n}: All the Jedi! Stun negated, +2d6 Attack and +2d6 Defense this round`);uxFx('resist',u);return}uxFx('stun',u);u.st.stun=1;u.stunR=G.round;log(`💫 ${u.d.n} is Stunned`)}
 function hurt(u,n){if(n<=0)return;if(u.st.orb){log(`${u.d.n} is immune to damage (Orbalisk Armor)`);uxFx('resist',u);return}u.tookDmg=1;if(k(u,'hate'))u.st.hate=1;u.hp-=n;uxFx('dmg',u,n);if(fbU(u,'res')&&u.hp>0&&u.hp<=4&&!u.spark){u.spark=1;log(`✨ ${u.d.n}: Spark of Hope! +1d6 Attack and +1d6 Defense for the rest of the match`)}if(G.abKey&&G.sel&&u.team!=G.sel.team&&fbU(G.sel,'triv')){live(G.sel.team).forEach(v=>heal(v,1));log('🩸 Triumvirate Drain: every ally recovers 1 Health')}if(k(u,'cmad')&&!u.cmadOn){const L=en(u).filter(v=>dist(u,v)<=1);if(L.length){u.cmadOn=1;log(`🌀 ${u.d.n}'s Cloned Madness lashes out at every adjacent enemy (1 damage each)`);L.forEach(v=>hurt(v,1));u.cmadOn=0}}if(u.hp>0)return;
+if(trayaSafe(u)){u.hp=1;log(`⚔ ${u.d.n} can't be defeated while her lightsabers remain (stays at 1 Health)`);return}
 if(k(u,'pain')&&!u.pu){u.pu=1;u.hp=4;u.st.taunt=1;log(`🔥 ${u.d.n}: Lord of Pain! Rises with 4 Health, taunting`);return}
 if(k(u,'essence')&&!G.pend&&essHosts(u).length){u.dead=1;G.pend={team:u.team,id:u.id};log(`👁 ${u.d.n} is defeated, but his essence reaches for a new host…`);uxFx('dead',u);return}
 if(k(u,'e_ben')&&!u.ep){u.ep=1;u.dead=1;G.ben[u.team]=1;log(`✨ ${u.d.n} becomes one with the Force! Allies gain +1d6 Defense`)}
@@ -43,6 +44,10 @@ function die(u){u.dead=1;if(!u.d.token)G.dead.push(u);log(`💀 ${u.d.n} is defe
 let HITBY=null;
 function caySacrifice(u,by){if(!by.dead){log(`💔 ${u.d.n}'s sacrifice stuns ${by.d.n}`);stun(by)}const ul=live(1-u.team).find(v=>v.d.n==='Ulic Qel-Droma');if(!ul)return;if(typeof cpLive=='function'&&cpLive()&&ul.team==0){log(`${ul.d.n} feels his brother fall, but the dark side holds him`);return}const o=ul.team;ul.team=u.team;ul.d={...ul.d,s:'L',t:tagSort([...ul.d.t.filter(t=>!['Sith','Sith Empire','Dark Jedi'].includes(t)),'Jedi'])};delete ul.st.taunt;heal(ul,4);log(`🕊 ${ul.d.n} is redeemed by his brother's sacrifice and turns to the Light Side (+4 Health)`);if(G.win==null&&!live(o).length)G.win=u.team}
 // faction bonus triggers when a unit falls, and Traya's lightsabers fall with her
+// Darth Traya: starts with 3 Floating Lightsabers next to her and can't drop below 1 Health while any remain
+const sabersOf=u=>G.u.filter(v=>!v.dead&&v.d.token&&v.owner===u.id);
+const trayaSafe=u=>k(u,'lsab')&&sabersOf(u).length>0;
+function spawnSabers(u){if(!k(u,'lsab'))return;for(let i=0;i<3;i++){const c=freeNear(u.x,u.y);if(!c)break;G.u.push({d:{...LSABER,s:u.d.s},team:u.team,x:c[0],y:c[1],home:[c[0],c[1]],hp:LSABER.h,st:{},used:0,ep:0,id:Math.max(...G.u.map(v=>v.id))+1,owner:u.id,...(u.cp?{cp:{}}:{})})}}
 function dropTokens(u){const T=G.u.filter(v=>!v.dead&&v.d.token&&v.owner===u.id);if(!T.length)return;T.forEach(v=>{v.dead=1;v.hp=0;uxFx('dead',v)});log(`The floating lightsabers clatter to the ground`)}
 function fbDie(u){dropTokens(u);if(u.d.token)return;const t=fbk(u.team),L=live(u.team);
 if(t=='remnant'&&L.length){L.forEach(v=>{heal(v,2);v.st.salv=1});log('⚑ Desperate Salvage: every surviving ally recovers 2 Health and gains +1d6 Defense this round')}
@@ -127,7 +132,6 @@ a_quad:{l:'Four-Blade Quad Strike (adjacent)',atk:1,tg:adj,go:(u,t)=>{G.qt=t;G.m
 a_link:{l:'Healing Link (adjacent ally)',tg:u=>al(u).filter(v=>dist(u,v)<=1),go:(u,t)=>{const m=Math.max(0,Math.min(3,u.hp-1,t.d.h-t.hp));u.hp-=m;t.hp+=m;delete t.st.stun;t.st.fort=1;log(`${u.d.n} gives ${m} Health to ${t.d.n}, who loses Stun and gains +1d6 Defense`)}},
 a_focus:{l:'Battle Focus (ally within 4)',tg:u=>al(u).filter(v=>dist(u,v)<=4),go:(u,t)=>{delete t.st.stun;delete t.st.taunt;delete t.st.sm;delete t.st.cd;t.st.focus=1;log(`${t.d.n} is focused: Stun and Taunt removed, +1d6 Attack`);G.mv=t;G.mode='amove';G.reach=reach(t);return 1}},
 e_sever:{l:'Epic: Sever Force (adjacent)',ep:1,tg:adj,go:(u,t)=>{debuff(t,'sever');log(`${t.d.n} is cut off from the Force this round`)}},
-e_lsabers:{l:'Epic: Floating Lightsabers (summon 3 tokens)',ep:1,inst:1,tg:u=>freeNear(u.x,u.y)?[u]:[],go:u=>{let n=0;for(let i=0;i<3;i++){const c=freeNear(u.x,u.y);if(!c)break;G.u.push({d:{...LSABER,s:u.d.s},team:u.team,x:c[0],y:c[1],hp:LSABER.h,st:{},used:1,ep:0,id:Math.max(...G.u.map(v=>v.id))+1,owner:u.id,...(u.cp?{cp:{}}:{})});n++}log(`⚔ ${u.d.n} lifts ${n} lightsabers with the Force. They can act from the next round`)}},
 a_drain:{l:'Drain Life (adjacent)',tg:adj,go:(u,t)=>{hurt(t,2);if(!t.dead)stun(t);heal(u,2);log(`${u.d.n} drains life (+2 Health)`)}},
 a_hatred:{l:'Relentless Hatred: Taunt + 3d6 Attack (adjacent)',atk:1,tg:adj,go:(u,t)=>{u.st.taunt=1;log(`🎯 ${u.d.n} taunts`);att(u,t)}},
 a_blow:{l:'Crushing Blow 3d6 (adjacent)',atk:1,tg:adj,go:(u,t)=>{const dm=att(u,t);if(dm>=2&&!t.dead)stun(t)}},
@@ -189,7 +193,7 @@ function resolveQuad(id){const s=G.sel,t=G.qt,x=id&&G.u.find(v=>v.id==id),b=q=>a
 if(!x){att(s,t,{n:4+b(t)});finish()}else{G.sp={a:t,b:x,n:4};G.mode='split';render()}}
 function start(){G={u:[],dead:[],log:[],turn:0,round:1,sel:null,mode:null,win:null,ben:[0,0]};let id=0;
 const cells=t=>{const a=[];for(let y of t?[0,1]:[6,7])for(let x=0;x<8;x++)a.push([x,y]);return shuf(a)};
-const fr=[cells(0),cells(1)];[0,1].forEach(t=>P[t].forEach(i=>{const d=R[i],c=fr[t].pop();G.u.push({d,team:t,x:c[0],y:c[1],home:[c[0],c[1]],hp:d.h,st:{},used:0,ep:0,id:id++})}));
+const fr=[cells(0),cells(1)];[0,1].forEach(t=>P[t].forEach(i=>{const d=R[i],c=fr[t].pop();G.u.push({d,team:t,x:c[0],y:c[1],home:[c[0],c[1]],hp:d.h,st:{},used:0,ep:0,id:id++})}));G.u.slice().forEach(spawnSabers);
 // faction bonuses: a squad whose members all share a faction (js/factions.js)
 G.fb=[0,1].map(t=>squadBonus(P[t].map(i=>R[i])));G.hr=[0,0];G.dj=['a','a'];G.djR=[0,0];G.bounty=[null,null];G.respawn=[];
 [0,1].forEach(t=>{const f=G.fb[t];if(!f)return;log(`⚑ ${t?'Dark':'Light'} Side faction bonus: ${f.bonus} (${f.n})`);if(f.key=='merc'){const m=live(1-t).sort((a,b)=>b.hp-a.hp||a.id-b.id)[0];if(m){G.bounty[t]=m.id;log(`🎯 Cutthroat Contracts: ${m.d.n} is marked`)}}});

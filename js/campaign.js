@@ -164,11 +164,12 @@ function cpCanGo(m, guests){
 function cpUnitData(s){ let d = s.son || s.boss ? cpSide().unit() : cpRec(s.n); if (s.lvl != null || s.skip) d = cpData(d, s.lvl ?? 3, s.skip); return s.hp ? Object.assign({}, d, {h:s.hp}) : d }
 function cpFree(rows){ const a = []; rows.forEach(y => { for (let x = 0; x < 8; x++) if (!occ(x, y)) a.push([x, y]) }); return shuf(a) }
 function cpAdd(d, team, c, lvl){
+  if (!c || occ(c[0], c[1])) c = freeNear(c ? c[0] : 3, c ? c[1] : (team ? 0 : 7)) || c;   // a Floating Lightsaber may already stand there
   const u = {d, team, x:c[0], y:c[1], hp:d.h, st:{}, used:0, ep:0, id:G.u.length, cp:{lvl}}, r = CPB.m.rules || {};
   if ((r.proj || []).includes(d.n)) u.cp.proj = 1;
   if ((r.floor || []).includes(d.n)) u.cp.floor = 1;
   if ((r.lastStand || []).includes(d.n)) u.cp.last = 1;
-  G.u.push(u); return u;
+  G.u.push(u); spawnSabers(u); return u;
 }
 function cpSpawn(i){
   const spots = cpFree([0, 1]).concat(cpFree([2, 3]));

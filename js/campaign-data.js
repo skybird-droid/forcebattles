@@ -218,7 +218,7 @@ const CP_MISSIONS = [
     premise:"The Jedi Exile and Visas Marr confront the three Sith Lords who hunt the last Jedi: Nihilus, Lord of Hunger; Sion, Lord of Pain; and Traya, Lord of Betrayal.",
     main:'Defeat Darth Nihilus, Darth Sion and Darth Traya.',
     waves:[[{n:'Darth Nihilus', hp:13}], [{n:'Darth Sion'}], [{n:'Darth Traya', hp:14}]],
-    special:['Three phases. Nihilus drains life from the fallen around him.', 'Sion rises again the first time he is defeated (Lord of Pain).', "Traya's Betrayal's Web weakens your Defense."],
+    special:['Three phases. Nihilus drains life from the fallen around him.', 'Sion rises again the first time he is defeated (Lord of Pain).', "Traya's Betrayal's Web weakens your Defense.", "Traya fights with three Floating Lightsabers and can't be defeated until all three are destroyed."],
     opts:[{t:'Visas Marr is still standing at the end.', c:{alive:['Visas Marr']}}, {t:'Win by the end of Round 10.', c:{rounds:10}}],
     outro:'The Triumvirate is broken. The Exile and Visas stand in the silence the Sith leave behind.'},
 
