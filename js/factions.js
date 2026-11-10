@@ -60,4 +60,4 @@ function fbPreview(idx){
 }
 
 // ---- Darth Traya's Floating Lightsaber token (not a pickable character) ----
-const LSABER = {n:'Floating Lightsaber', s:'D', t:[], h:2, a:2, d:0, mv:2, k:[], x:'', abs:[], img:'images/portraits/traya_lightsaber.png', token:1, cost:0};
+const LSABER = {n:'Floating Lightsaber', s:'D', t:[], h:2, a:2, d:1, mv:2, k:[], x:'', abs:[], img:'images/portraits/traya_lightsaber.png', token:1, cost:0};

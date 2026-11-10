@@ -10,7 +10,7 @@ const UPDATES = [
     'Force-Sensitive is no longer a tag. General Grievous is now Non-Force Sensitive, and Barriss Offee (Fallen) is now a Dark Jedi.',
     'Sith Eternal is no longer a faction, and the Sith Eternal Emperor is now a Clone. Kylo Ren is no longer Sith. Luuke and Joruus are now Imperial Remnant instead of Imperial.',
     "Taron Malecos's Sith Sorcery Smash is now called Night Sorcery Smash.",
-    "Darth Traya now counts as 2 in your squad. Telekinetic Saber Storm is replaced by a new passive, Floating Lightsabers: she starts every battle with 3 lightsabers beside her (2 Health, 2d6 Attack, no Defense, move 2), and she can't be defeated until all 3 are destroyed.",
+    "Darth Traya now counts as 2 in your squad. Telekinetic Saber Storm is replaced by a new passive, Floating Lightsabers: she starts every battle with 3 lightsabers beside her (2 Health, 2d6 Attack, 1d6 Defense, move 2). Each lightsaber gets +1d6 Attack for every lightsaber still standing, and Traya takes no damage until all 3 are destroyed.",
     'Public Lobbies: host a game anyone can join, or browse open games and jump in. Games in Progress on the main menu shows who is waiting, picking squads or in battle.',
     "New Dark Side: Joruus C'baoth. New Light Side: Kyle Katarn (Battlemaster). 76 characters are now available.",
     "Joruus's Cloned Madness deals 1 damage to every adjacent enemy whenever he is hurt. His Force Lightning & Control Stuns and lets you move the target 1 space.",

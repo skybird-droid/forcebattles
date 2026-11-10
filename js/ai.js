@@ -27,7 +27,8 @@ const aiWorth = t => 2 + t.d.a + ((t.d.cost || 1) > 1 ? 3 : 0);
 function aiHit(u, t, n){
   if (t.st.orb) return {ed:0, hit:0, kill:0};
   const dd = dDice(t, u), m = 3.5 * (n - dd), sd = Math.sqrt(2.92 * (n + dd)) || 1, z = m / sd;
-  return {ed:Math.min(t.hp - (trayaSafe(t) ? 1 : 0), Math.max(0, sd * aiPdf(z) + m * aiCdf(z))), hit:1 - aiCdf((.5 - m) / sd), kill:trayaSafe(t) ? 0 : 1 - aiCdf((t.hp - .5 - m) / sd)};
+  if (trayaSafe(t)) return {ed:0, hit:0, kill:0};
+  return {ed:Math.min(t.hp, Math.max(0, sd * aiPdf(z) + m * aiCdf(z))), hit:1 - aiCdf((.5 - m) / sd), kill:1 - aiCdf((t.hp - .5 - m) / sd)};
 }
 function aiAtkScore(u, t, n, desc){
   if (t.team == u.team) return -aiHit(u, t, n).ed * 2;
