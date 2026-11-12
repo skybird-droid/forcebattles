@@ -343,3 +343,13 @@ input,select{border-radius:2px!important;background:#060c14!important;border-col
 .fb-preview.none{opacity:.8}
 .ab.fac{border-color:var(--gold)}
 .fb-choice .bt{margin-top:8px}
+
+/* ===== EVALUATION BAR (local + VS Computer) ===== */
+.evalwrap{display:flex;gap:6px;align-items:stretch;width:100%;max-width:min(100%,734px)}
+.evalwrap>.board{flex:1 1 auto;min-width:0}
+.evalbar{position:relative;flex:0 0 22px;border:1px solid #24435c;border-radius:3px;overflow:hidden;background:var(--D);box-shadow:inset 0 0 8px #0006}
+.eval-fill{position:absolute;left:0;right:0;bottom:0;background:var(--L);transition:height .6s cubic-bezier(.2,.8,.2,1)}
+.eval-num{position:absolute;left:0;right:0;font-size:9px;font-weight:900;text-align:center;line-height:1;color:#08111d;letter-spacing:-.02em;z-index:1}
+.eval-num.L{bottom:5px}.eval-num.D{top:5px}
+@media(prefers-reduced-motion:reduce){.eval-fill{transition:none}}
+@media(max-width:700px){.evalwrap{gap:3px;margin:0 -8px;width:calc(100% + 16px);max-width:none}.evalwrap>.board{margin:0;width:auto}.evalbar{flex-basis:16px}.eval-num{font-size:7px}}

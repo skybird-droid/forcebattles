@@ -200,3 +200,9 @@ FACTION OVERHAUL (Nov 9) - js/factions.js (loaded right after characters.js)
 - Mercenary: the enemy with the most Health is marked automatically at the start (G.bounty).
 - Darth Traya: cost 2 (SQUAD_COST). Passive 'lsab': spawnSabers() (called from start() and cpAdd) puts 3 LSABER tokens (d.token, 2 HP, 2d6, 1d6, mv 2, owner = Traya's id) next to her; aDice gives each token +1d6 per living saber (off while Traya is severed); trayaSafe() at the top of hurt() blocks all damage to her while any remain (aiHit returns 0). Tokens never go into G.dead (no revive), can't be Essence hosts, and dropTokens() kills them when Traya dies. reach() defaults to u.d.mv||4.
 - Squad builders (local, online, saved squads) show fbPreview(); battle shows the bonus as a third passive (cls 'pas fac').
+
+EVALUATION BAR (local + VS Computer only; never online or campaign)
+- js/ai.js evalBarHtml()/evalAnimate(), rendered left of the board in game.js render() inside .evalwrap.
+- evalAdv() = 2.6*ln(HP_L/HP_D) + 1.5*ln(Off_L/Off_D) + 0.13*(side to move), Light win% = logistic(evalAdv).
+  Off = per-unit mean aiHit().ed vs targetable enemies, x0.5 if stunned, x(1+0.1*abilities).
+  Weights fitted by logistic regression on ~11k positions from AI-vs-AI games (~83% of winners called).

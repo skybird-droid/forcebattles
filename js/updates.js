@@ -2,6 +2,9 @@
 // To announce a change, add a new entry at the TOP of this list. The newest entry
 // shows on the menu, and players who haven't seen it yet get a "NEW" badge.
 const UPDATES = [
+  {date:'Nov 11, 2026', title:'Evaluation Bar', items:[
+    "New evaluation bar beside the board in Local Skirmish and VS Computer: it shows which side is winning and their chance to win, based on each side's Health and damage. It isn't shown in Online Battles or the Campaign.",
+  ]},
   {date:'Nov 9, 2026', title:'Faction Bonuses, Public Lobbies and New Characters', items:[
     'Faction Bonuses: when all 4 members of your squad share a faction, they get an extra bonus passive. The squad builder shows which bonus your squad will get.',
     'The most specific faction wins: Sub-Factions first, then Main Factions, then Jedi, Sith or Dark Jedi, then Origins. Inquisitorius beats Imperial, and Rebel Alliance beats Jedi.',

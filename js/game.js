@@ -266,11 +266,11 @@ function render(){let h='';TIPS=[];if(typeof document.getElementById=='function'
 if(!G){prng=Math.random;if(LOBBY.mode=='squads')squadsScreen();else if(LOBBY.mode=='local'||LOBBY.mode=='ai')selectScreen();else if(LOBBY.mode=='camp')cpScreen();else lobbyScreen();uxAfterRender();return}
 const s=G.sel;
 h+=G.win!=null?`<div class="bar ${sideOf(G.win)?'D':'L'}">🏆 ${sideOf(G.win)?'Dark':'Light'} Side wins! <button onclick="endGame()">${NET?'Rematch':LOBBY.mode=='camp'?'Continue':'New game'}</button></div>`:`<div class="bar turnbar ${sideOf(G.turn)?'D':'L'}"><b class="tb-side">${sideOf(G.turn)?'Dark':'Light'} Side's turn</b><span class="tb-round">Round ${G.round}</span><span class="tb-hint">${aiTurn()?'The computer is playing…':G.mode=='move'?'Choose a green square to move, press Stay in place, or select your unit again to deselect.':G.mode=='tg'?'Choose a red target.':G.mode=='amove'?'Move your ally to a green square.':G.mode=='split'?'Split your Attack dice.':s?'Choose an action.':'Select one of your units.'}</span></div>`;
-h+=onlineBar();h+='<div class="row"><div class="col"><div class="board">';
+h+=onlineBar();h+='<div class="row"><div class="col"><div class="evalwrap">'+(typeof evalBarHtml=='function'?evalBarHtml():'')+'<div class="board">';
 for(let y=0;y<8;y++)for(let x=0;x<8;x++){const u=occ(x,y);let c='c';
 if(u)c+=` U ${u.d.s} ${u.used||u.st.stun?'used':''}`;if((G.mode=='move'||G.mode=='amove'||G.mode=='revspot')&&G.reach.has(x+','+y))c+=' m';if(G.mode=='tg'&&u&&G.tg.includes(u))c+=' a';if(u&&u==s)c+=' s';
 h+=`<button class="${c}" data-x="${x}" data-y="${y}" ${u&&u.d.img?`style="background-image:url('${u.d.img}')"`:''} ${u?`title="${esc(u.d.n.replace(/ \(.*/,''))}" aria-label="${esc(u.d.n.replace(/ \(.*/,''))}"`:''} onclick="cell(${x},${y})">${u?`<small>♥${u.hp}${u.st.stun?' 💫':''}${isT(u)?' 🎯':''}</small>`:''}</button>`}
-h+='</div></div><div class="col">';
+h+='</div></div></div><div class="col">';
 if(G.win==null&&!G.sel&&!G.pend&&fbk(ctrl())=='dj'&&G.djR[ctrl()]!=G.round&&mine())h+=`<div class="card fb-choice"><b>Unpredictable Power</b> <i>(Dark Jedi faction bonus)</i><br>Choose what your allies gain this round. Until you choose, they keep +1d6 ${G.dj[ctrl()]=='a'?'Attack':'Defense'}.<div class="bt"><button onclick="djPick('a')">⚔ +1d6 Attack</button><button onclick="djPick('d')">🛡 +1d6 Defense</button></div></div>`;
 if(G.pend&&G.mode=='tg'&&!G.win){const S=G.u.find(v=>v.id===G.pend.id);h+='<div class="actionbar"><div class="card"><b>'+esc(S.d.n)+'</b> has been defeated.<br><i>His essence can take over any character within 2 spaces (friend or enemy). Click a highlighted character.</i></div><div class="bt">'+(mine()?'<button onclick="essPass()">No host: let him fade</button>':'<i>Waiting for the other player…</i>')+'</div></div>'}
 else if(s&&!G.win){h+='<div class="actionbar">'+info(s)+abBar(s,G.mode=='act'&&mine())+'<div class="bt">';
@@ -286,7 +286,7 @@ else if(G.mode=='quad'){h+=`Quad Strike on ${G.qt.d.n}:<br><button onclick="reso
 else if(G.mode=='amove')h+='<button onclick="finish()">Skip move</button>';
 else if(!(s.n>=1))h+='<button onclick="back()">Back</button>';h+='</div></div>'}
 else if(G.insp&&!G.insp.dead)h+=info(G.insp)+abBar(G.insp,false);
-h+=uxCombatHtml()+uxLogHtml()+'</div></div>';$('#app').innerHTML=h;uxAfterRender()}
+h+=uxCombatHtml()+uxLogHtml()+'</div></div>';$('#app').innerHTML=h;uxAfterRender();if(typeof evalAnimate=='function')evalAnimate()}
 if(typeof document.addEventListener=='function'){const tip=document.createElement('div');tip.id='tip';document.body.appendChild(tip);
 const place=(x,y)=>{const w=tip.offsetWidth,h=tip.offsetHeight;let l=x+14,t=y+14;if(l+w>innerWidth-8)l=Math.max(8,innerWidth-w-8);if(t+h>innerHeight-8)t=Math.max(8,y-h-10);tip.style.left=l+'px';tip.style.top=t+'px'};
 const clearRangePreview=()=>document.querySelectorAll('.board .range-target').forEach(n=>n.classList.remove('range-target'));
